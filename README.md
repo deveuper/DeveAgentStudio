@@ -1,10 +1,10 @@
 # DeveAgent Studio
 
-<p align="center">
-  <a href="./README.md"><img alt="English" src="https://img.shields.io/badge/Language-English-202124?style=for-the-badge" /></a>
-  <a href="./docs/readme/README.zh-CN.md"><img alt="简体中文" src="https://img.shields.io/badge/语言-简体中文-D94F2B?style=for-the-badge" /></a>
-  <a href="./docs/readme/README.fr.md"><img alt="Français" src="https://img.shields.io/badge/Langue-Français-2563EB?style=for-the-badge" /></a>
-</p>
+**Read this page in:** [English](./README.md) | [简体中文（完整中文介绍）](./docs/readme/README.zh-CN.md) | [Français](./docs/readme/README.fr.md) | [All languages / 多语言入口](./docs/readme/README.md)
+
+> 中文用户：请打开 **[简体中文完整介绍](./docs/readme/README.zh-CN.md)**。应用界面还支持繁体中文、日语、韩语、德语、西班牙语等语言；完整列表见 **[多语言入口](./docs/readme/README.md)**。
+
+**Desktop UI:** English · 简体中文 · 繁體中文 · 한국어 · Deutsch · Español · Français · Dansk · 日本語 · Polski · Русский · Українська · العربية · Norsk · Português (Brasil) · ไทย · Bosanski · Türkçe
 
 **An autonomous agent workstation for coding, planning, and long-running tasks — built on the OpenCode architecture, with a DeveAgent-native shell.**
 

@@ -1,10 +1,10 @@
 # DeveAgent Studio
 
-<p align="center">
-  <a href="../../README.md"><img alt="English" src="https://img.shields.io/badge/Language-English-202124?style=for-the-badge" /></a>
-  <a href="./README.zh-CN.md"><img alt="简体中文" src="https://img.shields.io/badge/语言-简体中文-D94F2B?style=for-the-badge" /></a>
-  <a href="./README.fr.md"><img alt="Français" src="https://img.shields.io/badge/Langue-Français-2563EB?style=for-the-badge" /></a>
-</p>
+**切换语言：** [English](../../README.md) | **简体中文** | [Français](./README.fr.md) | [多语言入口](./README.md)
+
+> 这里是 DeveAgent Studio 的完整简体中文介绍。返回 GitHub 首页请点 [English / 项目主页](../../README.md)，查看应用支持的全部界面语言请点 [多语言入口](./README.md)。
+
+**桌面界面语言：** English · 简体中文 · 繁體中文 · 한국어 · Deutsch · Español · Français · Dansk · 日本語 · Polski · Русский · Українська · العربية · Norsk · Português (Brasil) · ไทย · Bosanski · Türkçe
 
 **自主智能体工作台：编码、规划与长跑任务 —— 基于 OpenCode 架构，配以 DeveAgent 原生外壳。**
 

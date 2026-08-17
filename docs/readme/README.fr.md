@@ -1,10 +1,10 @@
 # DeveAgent Studio
 
-<p align="center">
-  <a href="../../README.md"><img alt="English" src="https://img.shields.io/badge/Language-English-202124?style=for-the-badge" /></a>
-  <a href="./README.zh-CN.md"><img alt="Chinois simplifié" src="https://img.shields.io/badge/Langue-简体中文-D94F2B?style=for-the-badge" /></a>
-  <a href="./README.fr.md"><img alt="Français" src="https://img.shields.io/badge/Langue-Français-2563EB?style=for-the-badge" /></a>
-</p>
+**Changer de langue :** [English](../../README.md) | [简体中文](./README.zh-CN.md) | **Français** | [Toutes les langues](./README.md)
+
+> Ceci est la présentation française complète de DeveAgent Studio. La page [Toutes les langues](./README.md) répertorie aussi les langues disponibles dans l'interface de l'application.
+
+**Langues de l'interface :** English · 简体中文 · 繁體中文 · 한국어 · Deutsch · Español · Français · Dansk · 日本語 · Polski · Русский · Українська · العربية · Norsk · Português (Brasil) · ไทย · Bosanski · Türkçe
 
 **Un poste de travail autonome pour le code, la planification et les tâches longues, fondé sur l'architecture OpenCode et doté de l'interface DeveAgent.**
 
