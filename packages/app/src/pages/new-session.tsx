@@ -137,6 +137,7 @@ export default function NewSessionPage() {
               <button
                 type="button"
                 class="size-7 rounded-md text-text-weak hover:bg-surface-base hover:text-text-base"
+                aria-label="隐藏右侧指标栏"
                 title="隐藏右侧指标栏"
                 onClick={() => setStore("metricsPanelOpen", false)}
               >
@@ -168,7 +169,13 @@ export default function NewSessionPage() {
           >
             <div class="flex shrink-0 items-center justify-between border-b border-border-weak-base bg-background-base px-4 py-3">
               <span class="text-[14px] font-medium">Memory</span>
-              <button class="text-text-weak hover:text-text-base" onClick={() => setStore("memoryPanelOpen", false)}>
+              <button
+                type="button"
+                class="text-text-weak hover:text-text-base"
+                aria-label="关闭 Memory 面板"
+                title="关闭 Memory 面板"
+                onClick={() => setStore("memoryPanelOpen", false)}
+              >
                 ×
               </button>
             </div>
@@ -187,7 +194,13 @@ export default function NewSessionPage() {
           >
             <div class="flex shrink-0 items-center justify-between border-b border-border-weak-base bg-background-base px-4 py-3">
               <span class="text-[14px] font-medium">多 Agent 团队</span>
-              <button class="text-text-weak hover:text-text-base" onClick={() => setStore("teamPanelOpen", false)}>
+              <button
+                type="button"
+                class="text-text-weak hover:text-text-base"
+                aria-label="关闭团队面板"
+                title="关闭团队面板"
+                onClick={() => setStore("teamPanelOpen", false)}
+              >
                 ×
               </button>
             </div>
@@ -206,7 +219,13 @@ export default function NewSessionPage() {
           >
             <div class="flex shrink-0 items-center justify-between border-b border-border-weak-base bg-background-base px-4 py-3">
               <span class="text-[14px] font-medium">审查</span>
-              <button type="button" class="text-text-weak hover:text-text-base" onClick={() => setStore("reviewPanelOpen", false)}>
+              <button
+                type="button"
+                class="text-text-weak hover:text-text-base"
+                aria-label="关闭审查面板"
+                title="关闭审查面板"
+                onClick={() => setStore("reviewPanelOpen", false)}
+              >
                 ×
               </button>
             </div>
