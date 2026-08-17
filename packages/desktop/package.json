@@ -2,12 +2,13 @@
   "name": "@opencode-ai/desktop",
   "private": true,
   "version": "1.17.8",
+  "description": "DeveAgent Studio autonomous agent workstation",
   "type": "module",
   "license": "MIT",
-  "homepage": "https://opencode.ai",
+  "homepage": "https://github.com/deveuper/DeveAgentStudio",
   "author": {
-    "name": "OpenCode",
-    "email": "hello@opencode.ai"
+    "name": "DeveAgent Studio contributors",
+    "url": "https://github.com/deveuper/DeveAgentStudio"
   },
   "scripts": {
     "typecheck": "tsgo -b",

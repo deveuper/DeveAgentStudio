@@ -22,13 +22,11 @@ const hasPythonRuntime = existsSync(path.join(pythonRuntimeDir, "python.exe"))
 const legacyDesktopEntry = path.join(packageDir, "resources", "linux", "opencode-desktop.desktop")
 const legacyDesktopEntryFpm = `${legacyDesktopEntry}=/usr/share/applications/opencode-desktop.desktop`
 
-// Release upload target. The beta channel currently mirrors the upstream
-// opencode-beta repo; prod points at anomalyco/opencode. Once the user provides
-// the DeveAgent GitHub repository, change ONLY these two entries (owner/repo)
-// and every publish/update path follows.
+// DeveAgent builds and update metadata must never target the upstream OpenCode
+// repositories. Both public channels are owned by this fork.
 const RELEASE_GITHUB = {
-  beta: { owner: "anomalyco", repo: "opencode-beta" },
-  prod: { owner: "anomalyco", repo: "opencode" },
+  beta: { owner: "deveuper", repo: "DeveAgentStudio" },
+  prod: { owner: "deveuper", repo: "DeveAgentStudio" },
 } as const
 
 async function signWindows(configuration: { path: string }) {
