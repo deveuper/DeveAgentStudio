@@ -202,6 +202,7 @@ export const dict = {
   "common.loading": "جارٍ التحميل",
   "common.loading.ellipsis": "...",
   "common.cancel": "إلغاء",
+  "common.clear": "مسح",
   "common.connect": "اتصال",
   "common.disconnect": "قطع الاتصال",
   "common.continue": "إرسال",

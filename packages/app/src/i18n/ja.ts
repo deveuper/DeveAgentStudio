@@ -201,6 +201,7 @@ export const dict = {
   "common.loading": "読み込み中",
   "common.loading.ellipsis": "...",
   "common.cancel": "キャンセル",
+  "common.clear": "クリア",
   "common.connect": "接続",
   "common.disconnect": "切断",
   "common.continue": "送信",

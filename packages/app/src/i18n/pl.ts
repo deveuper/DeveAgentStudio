@@ -203,6 +203,7 @@ export const dict = {
   "common.loading": "Ładowanie",
   "common.loading.ellipsis": "...",
   "common.cancel": "Anuluj",
+  "common.clear": "Wyczyść",
   "common.connect": "Połącz",
   "common.disconnect": "Rozłącz",
   "common.continue": "Prześlij",

@@ -219,6 +219,7 @@ export const dict = {
   "common.loading": "Učitavanje",
   "common.loading.ellipsis": "...",
   "common.cancel": "Otkaži",
+  "common.clear": "Očisti",
   "common.connect": "Poveži",
   "common.disconnect": "Prekini vezu",
   "common.continue": "Pošalji",

@@ -201,6 +201,7 @@ export const dict = {
   "common.loading": "로딩 중",
   "common.loading.ellipsis": "...",
   "common.cancel": "취소",
+  "common.clear": "지우기",
   "common.connect": "연결",
   "common.disconnect": "연결 해제",
   "common.continue": "제출",

@@ -218,6 +218,7 @@ export const dict = {
   "common.loading": "กำลังโหลด",
   "common.loading.ellipsis": "...",
   "common.cancel": "ยกเลิก",
+  "common.clear": "ล้าง",
   "common.connect": "เชื่อมต่อ",
   "common.disconnect": "ยกเลิกการเชื่อมต่อ",
   "common.continue": "ส่ง",

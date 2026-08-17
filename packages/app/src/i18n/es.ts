@@ -218,6 +218,7 @@ export const dict = {
   "common.loading": "Cargando",
   "common.loading.ellipsis": "...",
   "common.cancel": "Cancelar",
+  "common.clear": "Limpiar",
   "common.connect": "Conectar",
   "common.disconnect": "Desconectar",
   "common.continue": "Enviar",

@@ -217,6 +217,7 @@ export const dict = {
   "common.loading": "Indlæser",
   "common.loading.ellipsis": "...",
   "common.cancel": "Annuller",
+  "common.clear": "Ryd",
   "common.connect": "Forbind",
   "common.disconnect": "Frakobl",
   "common.continue": "Indsend",

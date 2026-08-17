@@ -223,6 +223,7 @@ export const dict = {
   "common.loading": "Yükleniyor",
   "common.loading.ellipsis": "...",
   "common.cancel": "İptal",
+  "common.clear": "Temizle",
   "common.connect": "Bağlan",
   "common.disconnect": "Bağlantı Kes",
   "common.continue": "Gönder",

@@ -222,6 +222,7 @@ export const dict = {
   "common.loading": "Завантаження",
   "common.loading.ellipsis": "...",
   "common.cancel": "Скасувати",
+  "common.clear": "Очистити",
   "common.open": "Відкрити",
   "common.connect": "Підключити",
   "common.disconnect": "Відключити",
