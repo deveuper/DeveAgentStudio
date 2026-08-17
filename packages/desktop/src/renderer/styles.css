@@ -1,0 +1,104 @@
+/*
+  DeveAgent Studio — desktop chrome layer.
+
+  Loaded after the app stylesheet, scoped to the Electron renderer only.
+  Theme colors come from the active theme's tokens (light-first); this file
+  only adds chrome-level polish: font stacks (incl. CJK fallbacks), scrollbars,
+  focus rings, selection color and animation hygiene (no decorative motion).
+*/
+
+:root {
+  /* Inter + CJK fallbacks so Chinese text never falls back to a broken font. */
+  --font-family-sans: "Inter", "Microsoft YaHei UI", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  --font-family-text: "Inter", "Microsoft YaHei UI", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  --v2-font-family-sans: "Inter", "Microsoft YaHei UI", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  --font-family-mono: "JetBrainsMono Nerd Font Mono", "Cascadia Code", "SF Mono", Consolas, "Courier New", monospace;
+
+  /* Remove the OpenCode-style scale pulse; keep opacity pulse for skeletons. */
+  --animate-pulse-scale: none;
+}
+
+/* Neutralize the staggered fade-up decoration entirely (low motion, low resources). */
+.fade-up-text {
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+/* Thin, quiet scrollbars (Codex-style). */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  /* Theme tokens flip with the active theme. The previous hardcoded white
+     alphas (#ffffff1f/#ffffff33) were dark-only colors applied unconditionally,
+     leaving the thumb invisible on the default light theme (probe-verified:
+     gutter pixel-identical to the page background, delta 0). */
+  background: var(--border-weak-base, #ffffff1f);
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-weak-hover, #ffffff33);
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Selection in the accent hue, subtle. */
+::selection {
+  background: #58a6ff40;
+}
+
+/* Soft focus ring on the brand accent. The Composer input and its controls
+   carry their own focus state (container border via focus-within, component
+   focus tokens), so a global outline there would blink on every focus move. */
+:focus-visible {
+  outline: 2px solid #58a6ff80;
+  outline-offset: 1px;
+}
+
+[data-component="prompt-input"]:focus-visible,
+[data-component="prompt-input"] *:focus-visible {
+  outline: none;
+}
+
+/* Reduced motion: kill all animation/transition duration globally. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Low-power mode: disable decorative animation and transitions entirely. */
+[data-low-power="true"] *,
+[data-low-power="true"] *::before,
+[data-low-power="true"] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Low-power mode: defer heavy right-rail panels off-viewport (browser-level lazy
+   rendering, no logic change). */
+[data-low-power="true"] [data-component="deveagent-dashboard"],
+[data-low-power="true"] [data-component="deveagent-memory-browser"],
+[data-low-power="true"] [data-component="deveagent-skillstore"] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+}
