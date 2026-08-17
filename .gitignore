@@ -4,6 +4,13 @@ node_modules
 .sst
 .env
 .env.local
+.env.*
+!.env.example
+!.env.*.example
+credentials.json
+auth.json
+*.pem
+*.key
 .idea
 .vscode
 .codex
@@ -19,6 +26,7 @@ ts-dist
 **/.omo
 .omo/
 /result
+/out/
 refs
 Session.vim
 /opencode.json
@@ -34,7 +42,8 @@ logs/
 *.bun-build
 tsconfig.tsbuildinfo
 
-# DeveAgent local state / E2E evidence — never publish
+# DeveAgent local state / E2E evidence — never publish. Already tracked
+# repository-owned .opencode configuration remains publishable and secret-free.
 .deveagent/
 .opencode/
 tests/

@@ -26,7 +26,7 @@ Codex-inspired UI.
 ### Autonomous execution
 - **Goal mode**: set a description + acceptance criteria; the agent keeps
   working in bounded re-entries until verified, with wall-clock and retry
-  budgets, deadline enforcement, and crash recovery from disk.
+  budgets, deadline enforcement, and persisted local recovery state.
 - **Loop mode**: schedule a bounded repeated task with interval, run, retry, and
   duration budgets; pause/resume/cancel.
 - **Grilling Me**: a cross-examination workflow that forces explicit
@@ -34,8 +34,9 @@ Codex-inspired UI.
 
 ### Multi-agent collaboration
 - **MoA Team**: planner / coder / reviewer / verifier advisors + an optional
-  executor; sequential, parallel, or debate runs; exactly-once execution
-  recovery (interrupted phases are never silently replayed).
+  executor; sequential, parallel, or debate runs using real OpenCode child
+  sessions. Interrupted write-capable phases require explicit review and are
+  never silently replayed.
 - **Expert system**: built-in read-only advisors (chief, planner, codegraph,
   reviewer, security, test, memory, token-saver, UI) plus user-defined custom
   experts.
@@ -46,22 +47,25 @@ Codex-inspired UI.
 ### Memory & context
 - **Durable memory**: project MEMORY.md, session checkpoints/notes, task
   progress, decisions, bug history, and auto-detected skill candidates —
-  searchable via SQLite FTS with CJK-aware bigram tokenization.
-- **Token Saver**: deterministic head/tail compression with byte-stable markers
-  (keeps the prefix cache stable while genuinely reducing tokens).
-- **CodeGraph**: incremental symbol index (tree-sitter) with import/call edges,
-  context packs, and review scopes.
-- **Cache-shape diagnostics**: per-session attribution of prefix-cache misses
-  (system vs tools vs parameter changes), so cache behavior is observable, not
-  assumed.
+  searchable via SQLite FTS with CJK-aware bigram tokenization when FTS5 is
+  available, with a keyword fallback.
+- **Token Saver**: scoped context selection, bounded tool-result projection,
+  and byte-stable prompt markers. Displayed savings are local estimates, not
+  provider billing or cache guarantees.
+- **CodeGraph**: bounded syntax-level symbol index (tree-sitter with parser
+  fallbacks), import/call heuristics, context packs, and review scopes.
+- **Cache-shape diagnostics**: records system/tool-schema shape changes beside
+  provider cache usage. It does not claim that a shape change caused a cache
+  miss.
 
 ### Independent capabilities
 - **Independent vision API** (OpenAI-compatible providers: MiMo, GLM, Ark,
   DashScope, Moonshot, Ollama, …) with automatic fallback to OS OCR
   (Windows.Media.Ocr / macOS Vision) — separate from the main provider.
 - **Independent STT** configuration with a real network probe for testing.
-- **Computer Use** with a hardened read-only shell allowlist (git/rg/node/bun/
-  python restricted to safe commands; no shell injection surface).
+- **Restricted Computer Use** for the DeveAgent window, an isolated browser
+  surface, and a read-only shell allowlist. It is not arbitrary desktop control
+  or an operating-system sandbox.
 
 ### UI (Codex-inspired, DeveAgent-branded)
 - Left rail / status bar / right overview panel shell, warm-orange accent,
@@ -77,8 +81,14 @@ Codex-inspired UI.
 - **MiMo Code workflows** — the mode vocabulary (ask / plan / build / compose /
   goal / loop / review / debug / refactor / auto) and the turn-tail runtime-state
   pattern.
-- **Reasonix / ZCode / Codex** — the visual direction: compact IDE-like layout,
-  orange accents, tight typography, and accessible interaction patterns.
+- **Hermes Agent and Pi** — bounded team orchestration, provider/profile
+  routing, session lifecycle, and extension behavior are studied and then
+  reimplemented against OpenCode interfaces.
+- **Reasonix / ZCode / Codex** — context-efficiency ideas and the compact,
+  accessible desktop-workbench direction.
+
+Reference repositories are used for interface and behavior research. DeveAgent
+code is implemented for this fork; leaked prompt text is not copied.
 
 ## How it improves on plain agent CLIs
 
@@ -87,12 +97,12 @@ fabricated; per-session cache metrics are tracked honestly in-app):
 
 - **Cache-first prompting**: the system prefix is byte-stable for the life of a
   session; runtime state rides the user turn as a synthetic part instead of
-  re-rendering the prefix. Prefix-shape diagnostics tell you *why* a cache miss
-  happened (system change, tool change, or parameter change).
+  re-rendering the prefix. Prefix-shape diagnostics identify relevant system
+  and tool changes without presenting correlation as cache-miss causation.
 - **Bounded everything**: goals/loops have run/retry/wall-clock budgets; every
-  in-memory registry and every persisted store is capped and atomically written
-  (temp+rename, serialized chains, Windows-lock fallback) — a crash cannot
-  silently lose agent state.
+  in-memory registry and persisted stores are capped and serialized. The normal
+  path uses temp+rename; Windows lock fallback and corrupt-state recovery are
+  best effort rather than transactional guarantees.
 - **Honest degradation**: unknown-model pricing returns absent (not guessed);
   unavailable vision/STT/OCR paths say why; interrupted multi-agent phases are
   reported, never silently replayed.
@@ -100,9 +110,22 @@ fabricated; per-session cache metrics are tracked honestly in-app):
   flag blocking, remote-skill URL allowlists (HTTPS-only marketplace hosts),
   private-address/DNS-rebinding protection for browser/MCP URLs, and secret
   hygiene enforced before any publish (see `agent.md`).
-- **Verification discipline**: every product change goes through source checks
-  (typecheck + unit suites), adversarial code review, and a packaged E2E gate
-  chain (loop/team/role/click, project flows) before release.
+- **Verification discipline**: source changes receive focused typechecks and
+  unit suites. Product release slices additionally run packaged E2E gates
+  (loop/team/role/click and project flows); documentation and accessibility-only
+  commits may be published before the next packaged slice.
+
+## Current implementation boundary
+
+| Area | Current evidence | Boundary |
+| --- | --- | --- |
+| Goal / Loop | Persisted bounded state, retry/deadline budgets, event-driven re-entry | Local process scheduler; completion still requires explicit verification |
+| MoA Team | Real child sessions, budgets, retries, persisted run records and synthesis | No distributed exactly-once executor; interrupted writes require review |
+| Memory | Markdown/JSON stores plus optional SQLite FTS5 | Packaged FTS availability depends on the runtime |
+| CodeGraph | Syntax symbols plus heuristic import/call neighbors | Not a complete cross-language semantic graph |
+| Computer Use | Restricted in-app/browser actions and read-only shell commands | Not full external-app desktop automation |
+| Token/cache | Real provider usage when returned; local context/savings estimates are labeled | Shape diagnostics do not prove cache-miss causation |
+| Remote Skills | HTTPS host/path validation, persisted install and selected prompt injection | Third-party skill text remains untrusted input |
 
 ## Getting started (from source)
 
@@ -129,10 +152,11 @@ See `packages/opencode/AGENTS.md`, `packages/app/AGENTS.md`, and
 
 ## Project status
 
-Actively developed. The autonomous features (goals, loops, team, memory,
-vision/STT, computer-use) are exercised by unit suites and packaged E2E gates on
-every release cycle. The development journal lives in the private workspace;
-this repository publishes the product source only.
+Actively developed. Focused source suites cover Goal, Loop, Team, memory,
+vision fallback, restricted Computer Use, remote skills, and CodeGraph. Packaged
+E2E evidence is produced per product release slice, not inferred from a visible
+button or a source-only change. The development journal remains private; this
+repository publishes product source only.
 
 ## Credits
 

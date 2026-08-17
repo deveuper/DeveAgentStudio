@@ -9,18 +9,21 @@ OpenCode, ZCode, DeveAgent, or any future tool) that touches this repository.
   This includes (but is not limited to): provider API keys (OpenAI, Anthropic,
   DeepSeek, GLM, MiMo, Kimi, Qwen, etc.), MCP credentials, OAuth tokens,
   `.env`-style secrets, and workspace `vision.json` / `stt.json` config files.
-- **Before any `git push` to a public remote, run a secret scan and review the
-  diff** for real-looking key material. Values like `sk-...`, `ghp_...`,
-  `AKIA...`, `Bearer <long-token>` in *test fixtures* are acceptable (they are
-  clearly fake), but anything that could be a live credential must be removed
-  and the file committed without it.
+- **Before any `git push` to a public remote, run
+  `node script/scan-secrets.mjs .` and review the
+  staged diff** for real-looking key material. Test fixtures are not trusted by
+  directory name: a fixture is accepted only when its exact path, rule, and
+  value hash appear in `script/secret-scan-allowlist.json`.
 - Local state that must NEVER be published (already gitignored):
   - `.deveagent/` (workspace-local config, may contain real API keys)
-  - `.opencode/` (local index/state)
+  - untracked `.opencode/` local index/state (tracked repository configuration
+    is publishable and must remain secret-free)
   - `tests/` (machine-specific E2E drivers and evidence artifacts)
   - `dist-*` / `out` / `node_modules` build output
 - If you ever see a real secret in the working tree, do not commit it; report
   it and continue with the secret removed.
+- The scanner must remain in the publishable `script/` directory. Do not point
+  this rule at ignored local E2E files under `tests/`.
 
 ## Repo conventions
 

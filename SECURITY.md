@@ -1,10 +1,10 @@
 # Security
 
-## IMPORTANT
+## Evidence requirements
 
-We do not accept AI generated security reports. We receive a large number of
-these and we absolutely do not have the resources to review them all. If you
-submit one that will be an automatic ban from the project.
+Security reports may use automated or AI-assisted analysis, but must include a
+reproducible proof, affected version or commit, impact, and a minimal test case.
+Unverified scanner output alone is not actionable.
 
 ## Threat Model
 
@@ -38,10 +38,10 @@ Server mode is opt-in only. When enabled, set `OPENCODE_SERVER_PASSWORD` to requ
 
 We appreciate your efforts to responsibly disclose your findings, and will make every effort to acknowledge your contributions.
 
-To report a security issue, please use the GitHub Security Advisory ["Report a Vulnerability"](https://github.com/anomalyco/opencode/security/advisories/new) tab.
+To report a security issue, please use the DeveAgent Studio GitHub Security
+Advisory ["Report a Vulnerability"](https://github.com/deveuper/DeveAgentStudio/security/advisories/new) tab.
 
 The team will send a response indicating the next steps in handling your report. After the initial reply to your report, the security team will keep you informed of the progress towards a fix and full announcement, and may ask for additional information or guidance.
 
-## Escalation
-
-If you do not receive an acknowledgement of your report within 6 business days, you may send an email to security@anoma.ly
+Do not open a public issue containing credentials, exploit details, or private
+workspace data.
