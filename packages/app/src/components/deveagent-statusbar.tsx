@@ -308,6 +308,7 @@ export function DeveagentStatusBar(props: { showTerminalToggle?: boolean } = {})
             <button
               type="button"
               class="hover:text-[var(--v2-state-fg-danger)]"
+              aria-label="取消当前 Goal"
               title="取消当前 Goal"
               onClick={cancelGoal}
             >
@@ -350,6 +351,7 @@ export function DeveagentStatusBar(props: { showTerminalToggle?: boolean } = {})
           <button
             type="button"
             class="hover:text-[var(--v2-state-fg-danger)]"
+            aria-label="取消当前 Loop"
             title="取消当前 Loop"
             onClick={() => updateLoop("cancel")}
           >

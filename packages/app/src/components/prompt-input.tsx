@@ -1772,6 +1772,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                       <button
                         type="button"
                         class="inline-flex h-6 max-w-[220px] items-center gap-1 rounded-md px-1 text-[12px] text-[#fa8c16] hover:bg-v2-background-bg-accent/10"
+                        aria-label={`取消加载 ${skill.name}`}
                         title={`取消加载 ${skill.name}`}
                         onClick={() => toggleComposerSkill(skill)}
                       >
@@ -1898,6 +1899,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                     <button
                       type="button"
                       data-action="prompt-deveagent-role"
+                      aria-label="清除角色路由"
                       title={`角色路由: ${store.deveagentRole}（消息按角色模型路由；未绑定则按默认规则解析。点击清除恢复手动模型）`}
                       class="inline-flex h-7 max-w-[160px] items-center gap-1 rounded-md border border-v2-border-border-focus/40 bg-v2-background-bg-accent/10 px-2 text-[12px] font-[520] text-v2-text-text-accent hover:bg-v2-background-bg-accent/15"
                       onClick={() => deveagentState.setRole(undefined)}
@@ -2239,6 +2241,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                     <button
                       type="button"
                       class="inline-flex h-6 max-w-[220px] items-center gap-1 rounded-md px-1 text-[12px] text-[#fa8c16] hover:bg-v2-background-bg-accent/10"
+                      aria-label={`取消加载 ${skill.name}`}
                       title={`取消加载 ${skill.name}`}
                       onClick={() => toggleComposerSkill(skill)}
                     >

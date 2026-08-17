@@ -472,7 +472,7 @@ function HomeDesign() {
                 <div class="text-[14px] font-medium text-v2-text-text-base">Memory</div>
                 <div class="mt-0.5 text-[10px] text-v2-text-text-muted">项目记忆浏览（无需打开会话）</div>
               </div>
-              <button class="size-7 rounded-md text-v2-text-text-muted hover:bg-v2-background-bg-layer-02 hover:text-v2-text-text-base" type="button" title="关闭 Memory" onClick={() => setState("memoryOpen", false)}>
+              <button class="size-7 rounded-md text-v2-text-text-muted hover:bg-v2-background-bg-layer-02 hover:text-v2-text-text-base" type="button" aria-label="关闭 Memory" title="关闭 Memory" onClick={() => setState("memoryOpen", false)}>
                 ×
               </button>
             </header>
@@ -508,7 +508,7 @@ function HomeDesign() {
                 <div class="text-[14px] font-medium text-v2-text-text-base">多 Agent 团队</div>
                 <div class="mt-0.5 text-[10px] text-v2-text-text-muted">全局团队配置浏览与编辑（会话内派发需打开会话）</div>
               </div>
-              <button class="size-7 rounded-md text-v2-text-text-muted hover:bg-v2-background-bg-layer-02 hover:text-v2-text-text-base" type="button" title="关闭团队面板" onClick={() => setState("teamOpen", false)}>
+              <button class="size-7 rounded-md text-v2-text-text-muted hover:bg-v2-background-bg-layer-02 hover:text-v2-text-text-base" type="button" aria-label="关闭团队面板" title="关闭团队面板" onClick={() => setState("teamOpen", false)}>
                 ×
               </button>
             </header>
@@ -533,7 +533,7 @@ function HomeDesign() {
                 <div class="text-[14px] font-medium text-v2-text-text-base">CodeGraph</div>
                 <div class="mt-0.5 text-[10px] text-v2-text-text-muted">项目级索引与 Context Pack 浏览（无需打开会话）</div>
               </div>
-              <button class="size-7 rounded-md text-v2-text-text-muted hover:bg-v2-background-bg-layer-02 hover:text-v2-text-text-base" type="button" title="关闭 CodeGraph" onClick={() => setState("codegraphOpen", false)}>
+              <button class="size-7 rounded-md text-v2-text-text-muted hover:bg-v2-background-bg-layer-02 hover:text-v2-text-text-base" type="button" aria-label="关闭 CodeGraph" title="关闭 CodeGraph" onClick={() => setState("codegraphOpen", false)}>
                 ×
               </button>
             </header>
@@ -568,7 +568,7 @@ function HomeDesign() {
                 <div class="text-[14px] font-medium text-v2-text-text-base">{state.sessionNoteKind === "review" ? "审查" : "概览"}</div>
                 <div class="mt-0.5 text-[10px] text-v2-text-text-muted">需要打开会话（依赖会话 diff 与运行指标）</div>
               </div>
-              <button class="size-7 rounded-md text-v2-text-text-muted hover:bg-v2-background-bg-layer-02 hover:text-v2-text-text-base" type="button" title="关闭" onClick={() => setState("sessionNoteOpen", false)}>
+              <button class="size-7 rounded-md text-v2-text-text-muted hover:bg-v2-background-bg-layer-02 hover:text-v2-text-text-base" type="button" aria-label={state.sessionNoteKind === "review" ? "关闭审查面板" : "关闭概览面板"} title="关闭" onClick={() => setState("sessionNoteOpen", false)}>
                 ×
               </button>
             </header>

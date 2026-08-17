@@ -70,7 +70,7 @@ export function DeveagentGlobalExpertsDrawer(props: { sessionID: Accessor<string
               <div class="text-[14px] font-medium text-text-strong">专家 · 召唤专家</div>
               <div class="mt-0.5 text-[10px] text-text-weak">浏览、编辑并应用领域专家（无需打开会话）</div>
             </div>
-            <button class="size-7 rounded-md text-text-weak hover:bg-surface-base hover:text-text-base" type="button" title="关闭专家" onClick={() => setOpen(false)}>
+            <button class="size-7 rounded-md text-text-weak hover:bg-surface-base hover:text-text-base" type="button" aria-label="关闭专家" title="关闭专家" onClick={() => setOpen(false)}>
               ×
             </button>
           </header>
