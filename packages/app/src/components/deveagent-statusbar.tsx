@@ -330,7 +330,7 @@ export function DeveagentStatusBar(props: { showTerminalToggle?: boolean } = {})
           <button type="button" class="hover:text-text-base disabled:opacity-40" title="确认验收条件并启动 Goal 队列" disabled={!goalCriteriaList().length} onClick={confirmGoalDraft}>
             确认启动
           </button>
-          <button type="button" class="hover:text-[var(--v2-state-fg-danger)]" title="放弃待确认 Goal" onClick={cancelGoalDraft}>×</button>
+          <button type="button" class="hover:text-[var(--v2-state-fg-danger)]" aria-label="放弃待确认 Goal" title="放弃待确认 Goal" onClick={cancelGoalDraft}>×</button>
         </span>
       </Show>
       <Show when={loop()?.active}>

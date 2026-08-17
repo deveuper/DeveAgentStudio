@@ -1847,6 +1847,7 @@ export default function Page() {
               <button
                 type="button"
                 class="size-7 rounded-md text-text-weak hover:text-text-base hover:bg-surface-base"
+                aria-label="隐藏右侧指标栏"
                 title="隐藏右侧指标栏"
                 onClick={() => setStore("metricsPanelOpen", false)}
               >
@@ -1887,7 +1888,10 @@ export default function Page() {
             <div class="flex shrink-0 items-center justify-between border-b border-border-weak-base bg-background-base px-4 py-3">
               <span class="text-[14px] font-medium">Memory</span>
               <button
+                type="button"
                 class="text-\[var\(--text-weak\)\] hover:text-[var(--text-base)]"
+                aria-label="关闭 Memory 面板"
+                title="关闭 Memory 面板"
                 onClick={() => setStore("memoryPanelOpen", false)}
               >
                 ✕
@@ -1912,7 +1916,10 @@ export default function Page() {
                 <div class="mt-0.5 text-[10px] text-text-weak">MoA 编排：顾问并行、综合与执行</div>
               </div>
               <button
+                type="button"
                 class="text-\[var\(--text-weak\)\] hover:text-[var(--text-base)]"
+                aria-label="关闭团队面板"
+                title="关闭团队面板"
                 onClick={() => setStore("teamPanelOpen", false)}
               >
                 ✕
