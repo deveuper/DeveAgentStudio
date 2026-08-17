@@ -2186,6 +2186,7 @@ export default function Layout(props: ParentProps) {
                     size="small"
                     class="!rounded-md"
                     title="隐藏左侧面板"
+                    aria-label="隐藏左侧面板"
                     onClick={() => setDeveagentSidebarOpen(false)}
                   />
                 </div>
@@ -2443,6 +2444,7 @@ export default function Layout(props: ParentProps) {
                   size="small"
                   class="!rounded-md"
                   title="新建会话"
+                  aria-label="新建会话"
                   onClick={() => window.dispatchEvent(new CustomEvent("deveagent:new-session"))}
                 />
               </div>

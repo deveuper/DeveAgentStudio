@@ -511,7 +511,12 @@ export const SettingsKeybinds: Component<{ v2?: boolean }> = (props) => {
                   class="flex-1"
                 />
                 <Show when={store.filter}>
-                  <IconButton icon="circle-x" variant="ghost" onClick={() => setStore("filter", "")} />
+                  <IconButton
+                    icon="circle-x"
+                    variant="ghost"
+                    onClick={() => setStore("filter", "")}
+                    aria-label={language.t("common.clear")}
+                  />
                 </Show>
               </div>
             </div>
@@ -549,6 +554,7 @@ export const SettingsKeybinds: Component<{ v2?: boolean }> = (props) => {
                 class="settings-v2-tab-search-clear"
                 icon={<IconV2 name="close" size="large" class="text-v2-icon-icon-muted" />}
                 onClick={() => setStore("filter", "")}
+                aria-label={language.t("common.clear")}
               />
             </Show>
           </div>

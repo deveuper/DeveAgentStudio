@@ -67,6 +67,7 @@ export const SettingsModelsV2: Component = () => {
               class="settings-v2-tab-search-clear"
               icon={<IconV2 name="close" size="large" class="text-v2-icon-icon-muted" />}
               onClick={() => list.clear()}
+              aria-label={language.t("common.clear")}
             />
           </Show>
         </div>

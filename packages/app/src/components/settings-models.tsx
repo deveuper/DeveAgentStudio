@@ -89,7 +89,12 @@ const SettingsModelsContent: Component = () => {
               class="flex-1"
             />
             <Show when={list.filter()}>
-              <IconButton icon="circle-x" variant="ghost" onClick={list.clear} />
+              <IconButton
+                icon="circle-x"
+                variant="ghost"
+                onClick={list.clear}
+                aria-label={language.t("common.clear")}
+              />
             </Show>
           </div>
         </div>
