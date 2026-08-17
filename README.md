@@ -1,5 +1,11 @@
 # DeveAgent Studio
 
+<p align="center">
+  <a href="./README.md"><img alt="English" src="https://img.shields.io/badge/Language-English-202124?style=for-the-badge" /></a>
+  <a href="./docs/readme/README.zh-CN.md"><img alt="简体中文" src="https://img.shields.io/badge/语言-简体中文-D94F2B?style=for-the-badge" /></a>
+  <a href="./docs/readme/README.fr.md"><img alt="Français" src="https://img.shields.io/badge/Langue-Français-2563EB?style=for-the-badge" /></a>
+</p>
+
 **An autonomous agent workstation for coding, planning, and long-running tasks — built on the OpenCode architecture, with a DeveAgent-native shell.**
 
 DeveAgent Studio is a desktop AI coding agent that keeps the battle-tested OpenCode
@@ -24,6 +30,7 @@ Codex-inspired UI.
 ## Key features
 
 ### Autonomous execution
+
 - **Goal mode**: set a description + acceptance criteria; the agent keeps
   working in bounded re-entries until verified, with wall-clock and retry
   budgets, deadline enforcement, and persisted local recovery state.
@@ -33,6 +40,7 @@ Codex-inspired UI.
   question→answer decisions before proceeding.
 
 ### Multi-agent collaboration
+
 - **MoA Team**: planner / coder / reviewer / verifier advisors + an optional
   executor; sequential, parallel, or debate runs using real OpenCode child
   sessions. Interrupted write-capable phases require explicit review and are
@@ -45,6 +53,7 @@ Codex-inspired UI.
   bound model cannot be resolved.
 
 ### Memory & context
+
 - **Durable memory**: project MEMORY.md, session checkpoints/notes, task
   progress, decisions, bug history, and auto-detected skill candidates —
   searchable via SQLite FTS with CJK-aware bigram tokenization when FTS5 is
@@ -59,6 +68,7 @@ Codex-inspired UI.
   miss.
 
 ### Independent capabilities
+
 - **Independent vision API** (OpenAI-compatible providers: MiMo, GLM, Ark,
   DashScope, Moonshot, Ollama, …) with automatic fallback to OS OCR
   (Windows.Media.Ocr / macOS Vision) — separate from the main provider.
@@ -68,6 +78,7 @@ Codex-inspired UI.
   or an operating-system sandbox.
 
 ### UI (Codex-inspired, DeveAgent-branded)
+
 - Left rail / status bar / right overview panel shell, warm-orange accent,
   Inter-first typography, skill chips (`# Skill` style), circular send button,
   sticky timeline headers, collapsible reasoning, diff summaries with
@@ -117,15 +128,15 @@ fabricated; per-session cache metrics are tracked honestly in-app):
 
 ## Current implementation boundary
 
-| Area | Current evidence | Boundary |
-| --- | --- | --- |
-| Goal / Loop | Persisted bounded state, retry/deadline budgets, event-driven re-entry | Local process scheduler; completion still requires explicit verification |
-| MoA Team | Real child sessions, budgets, retries, persisted run records and synthesis | No distributed exactly-once executor; interrupted writes require review |
-| Memory | Markdown/JSON stores plus optional SQLite FTS5 | Packaged FTS availability depends on the runtime |
-| CodeGraph | Syntax symbols plus heuristic import/call neighbors | Not a complete cross-language semantic graph |
-| Computer Use | Restricted in-app/browser actions and read-only shell commands | Not full external-app desktop automation |
-| Token/cache | Real provider usage when returned; local context/savings estimates are labeled | Shape diagnostics do not prove cache-miss causation |
-| Remote Skills | HTTPS host/path validation, persisted install and selected prompt injection | Third-party skill text remains untrusted input |
+| Area          | Current evidence                                                               | Boundary                                                                 |
+| ------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| Goal / Loop   | Persisted bounded state, retry/deadline budgets, event-driven re-entry         | Local process scheduler; completion still requires explicit verification |
+| MoA Team      | Real child sessions, budgets, retries, persisted run records and synthesis     | No distributed exactly-once executor; interrupted writes require review  |
+| Memory        | Markdown/JSON stores plus optional SQLite FTS5                                 | Packaged FTS availability depends on the runtime                         |
+| CodeGraph     | Syntax symbols plus heuristic import/call neighbors                            | Not a complete cross-language semantic graph                             |
+| Computer Use  | Restricted in-app/browser actions and read-only shell commands                 | Not full external-app desktop automation                                 |
+| Token/cache   | Real provider usage when returned; local context/savings estimates are labeled | Shape diagnostics do not prove cache-miss causation                      |
+| Remote Skills | HTTPS host/path validation, persisted install and selected prompt injection    | Third-party skill text remains untrusted input                           |
 
 ## Getting started (from source)
 
@@ -149,6 +160,13 @@ bun run package:win      # after: bunx electron-vite build
 
 See `packages/opencode/AGENTS.md`, `packages/app/AGENTS.md`, and
 `packages/desktop/AGENTS.md` for package-specific conventions.
+
+## Download
+
+Windows x64 installer and portable ZIP builds are published on the
+[GitHub Releases page](https://github.com/deveuper/DeveAgentStudio/releases/latest).
+Release packages never include local provider keys or `.deveagent` settings;
+configure providers after installation.
 
 ## Project status
 

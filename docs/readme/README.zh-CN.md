@@ -1,5 +1,11 @@
 # DeveAgent Studio
 
+<p align="center">
+  <a href="../../README.md"><img alt="English" src="https://img.shields.io/badge/Language-English-202124?style=for-the-badge" /></a>
+  <a href="./README.zh-CN.md"><img alt="简体中文" src="https://img.shields.io/badge/语言-简体中文-D94F2B?style=for-the-badge" /></a>
+  <a href="./README.fr.md"><img alt="Français" src="https://img.shields.io/badge/Langue-Français-2563EB?style=for-the-badge" /></a>
+</p>
+
 **自主智能体工作台：编码、规划与长跑任务 —— 基于 OpenCode 架构，配以 DeveAgent 原生外壳。**
 
 DeveAgent Studio 是一款桌面端 AI 编程智能体：以久经考验的 OpenCode 引擎为内核，
@@ -20,12 +26,14 @@ DeveAgent Studio 是一款桌面端 AI 编程智能体：以久经考验的 Open
 ## 核心功能
 
 ### 自主执行
+
 - **Goal 模式**：设定描述 + 验收标准；智能体在有界重入内持续工作直到验证通过，
   带墙钟/重试预算、截止时间强制执行与本地持久化恢复状态。
 - **Loop 模式**：调度有界重复任务（间隔/轮次/重试/时长预算）；暂停/恢复/取消。
 - **Grilling Me**：交叉质询流程，强制先做显式问答决策再继续。
 
 ### 多智能体协作
+
 - **MoA 团队**：planner/coder/reviewer/verifier 顾问 + 可选 executor；
   通过真实 OpenCode 子会话顺序/并行/辩论运行；中断的可写阶段必须显式复核，
   不会静默重放。
@@ -35,6 +43,7 @@ DeveAgent Studio 是一款桌面端 AI 编程智能体：以久经考验的 Open
 - **角色→模型路由**：按角色绑定模型，绑定模型无法解析时如实告警。
 
 ### 记忆与上下文
+
 - **持久记忆**：项目 MEMORY.md、会话检查点/笔记、任务进度、决策、Bug 历史、
   自动发现的技能候选；运行时具备 FTS5 时使用 SQLite FTS + 中文 bigram，
   否则回退关键词检索。
@@ -46,6 +55,7 @@ DeveAgent Studio 是一款桌面端 AI 编程智能体：以久经考验的 Open
   不把相关性写成缓存未命中的因果。
 
 ### 独立能力
+
 - **独立视觉 API**（OpenAI 兼容提供商：MiMo/GLM/火山方舟/百炼/Moonshot/Ollama…）
   自动回退系统 OCR（Windows.Media.Ocr / macOS Vision）——与主提供商分离。
 - **独立 STT** 配置，带真实网络探测测试。
@@ -53,6 +63,7 @@ DeveAgent Studio 是一款桌面端 AI 编程智能体：以久经考验的 Open
   不是任意桌面软件控制，也不是操作系统安全沙箱。
 
 ### UI（Codex 风格、DeveAgent 品牌化）
+
 - 左栏 / 状态栏 / 右侧概览面板外壳，暖橙强调色，Inter 优先字体，
   `# Skill` 风格技能 chips，圆形发送按钮，粘性时间线头部，可折叠推理，
   带无障碍控件的 diff 摘要，浅/深双主题 token 级换肤。
@@ -89,15 +100,15 @@ DeveAgent Studio 是一款桌面端 AI 编程智能体：以久经考验的 Open
 
 ## 当前实现边界
 
-| 能力 | 当前证据 | 边界 |
-| --- | --- | --- |
-| Goal / Loop | 持久化有界状态、重试/截止预算、事件驱动重入 | 本地进程调度；完成仍需显式验证 |
-| MoA 团队 | 真实子会话、预算、重试、运行记录与汇总 | 不是分布式恰好一次执行；中断写入需复核 |
-| Memory | Markdown/JSON + 可选 SQLite FTS5 | 打包运行时是否有 FTS 取决于环境 |
-| CodeGraph | 语法符号 + 启发式导入/调用邻居 | 不是完整跨语言语义图 |
-| Computer Use | 受限应用内/浏览器动作与只读 shell | 不是任意外部软件桌面自动化 |
-| Token/缓存 | Provider 返回的真实用量；本地估算会明确标注 | 形状诊断不能证明缓存未命中原因 |
-| 远程 Skill | HTTPS 主机/路径校验、持久安装、选中后注入 | 第三方 Skill 文本仍是不可信输入 |
+| 能力         | 当前证据                                    | 边界                                   |
+| ------------ | ------------------------------------------- | -------------------------------------- |
+| Goal / Loop  | 持久化有界状态、重试/截止预算、事件驱动重入 | 本地进程调度；完成仍需显式验证         |
+| MoA 团队     | 真实子会话、预算、重试、运行记录与汇总      | 不是分布式恰好一次执行；中断写入需复核 |
+| Memory       | Markdown/JSON + 可选 SQLite FTS5            | 打包运行时是否有 FTS 取决于环境        |
+| CodeGraph    | 语法符号 + 启发式导入/调用邻居              | 不是完整跨语言语义图                   |
+| Computer Use | 受限应用内/浏览器动作与只读 shell           | 不是任意外部软件桌面自动化             |
+| Token/缓存   | Provider 返回的真实用量；本地估算会明确标注 | 形状诊断不能证明缓存未命中原因         |
+| 远程 Skill   | HTTPS 主机/路径校验、持久安装、选中后注入   | 第三方 Skill 文本仍是不可信输入        |
 
 ## 从源码构建
 
@@ -121,6 +132,12 @@ bun run package:win      # 先执行: bunx electron-vite build
 
 包级约定见 `packages/opencode/AGENTS.md`、`packages/app/AGENTS.md`、
 `packages/desktop/AGENTS.md`。
+
+## 下载
+
+Windows x64 安装版和便携 ZIP 会发布在
+[GitHub Releases 页面](https://github.com/deveuper/DeveAgentStudio/releases/latest)。
+发布包不会包含本机 Provider API Key 或 `.deveagent` 设置；安装后由用户自行配置。
 
 ## 项目状态
 
