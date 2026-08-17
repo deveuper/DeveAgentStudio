@@ -1056,6 +1056,7 @@ let providerRegistrySnapshot: Record<string, { models?: Record<string, unknown> 
 const sessionAuxiliary = new Map<string, DeveAgentRuntimeState["auxiliary"]>()
 
 export function syncDeveAgentRuntimeGlobals() {
+  ;(globalThis as any).__deveagent_remote_mcp = runtimeState.remoteMcp !== false
   ;(globalThis as any).__deveagent_markitdown_mode = runtimeState.selectedSkills.some(
     (skill) => skill.id === "markitdown" && skill.enabled,
   )

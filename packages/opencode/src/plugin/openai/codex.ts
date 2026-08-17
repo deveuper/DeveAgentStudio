@@ -382,7 +382,7 @@ export async function CodexAuthPlugin(input: PluginInput, options: CodexAuthPlug
                   output: 0,
                   cache: { read: 0, write: 0 },
                 },
-                limit: model.id.includes("gpt-5.5")
+                limit: model.id.includes("gpt-5.5") || model.id.includes("gpt-5.6")
                   ? {
                       context: 400_000,
                       input: 272_000,

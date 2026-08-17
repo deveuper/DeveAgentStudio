@@ -29,6 +29,18 @@ describe("DeveAgent runtime state", () => {
     }
   })
 
+  test("synchronizes the remote MCP hard gate with runtime state", () => {
+    const previous = getDeveAgentState()
+    try {
+      setDeveAgentState({ remoteMcp: false })
+      expect((globalThis as any).__deveagent_remote_mcp).toBe(false)
+      setDeveAgentState({ remoteMcp: true })
+      expect((globalThis as any).__deveagent_remote_mcp).toBe(true)
+    } finally {
+      setDeveAgentState(previous)
+    }
+  })
+
   test("uses CJK FTS terms and drops weak relative matches when the sidecar is available", async () => {
     const directory = await mkdtemp(path.join(tmpdir(), "deveagent-memory-fts-ranking-"))
     try {
