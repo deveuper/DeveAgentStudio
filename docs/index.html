@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DeveAgent Studio — an autonomous agent workstation</title>
+    <meta
+      name="description"
+      content="A desktop AI coding agent with bounded autonomy: goals that verify themselves, teams that debate, reversible rewind, and metrics that never invent a number."
+    />
+    <meta property="og:title" content="DeveAgent Studio" />
+    <meta property="og:description" content="An autonomous agent workstation for coding, planning and long-running tasks." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="./assets/screenshot-session.png" />
+    <link rel="icon" href="./assets/icon.png" />
+    <style>
+      :root {
+        --bg: #ffffff;
+        --bg-soft: #f7f8fa;
+        --bg-card: #ffffff;
+        --bg-inset: #f2f4f7;
+        --border: #e3e7ed;
+        --border-strong: #cfd6e0;
+        --text: #1c222b;
+        --text-muted: #545d69;
+        --text-faint: #828b98;
+        --accent: #c2410c;
+        --accent-hover: #9a3412;
+        --accent-soft: #fff4ee;
+        --success: #15803d;
+        --warning: #b45309;
+        --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 8px 24px -12px rgba(16, 24, 40, 0.12);
+        --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+        --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+          "Microsoft YaHei UI", "Noto Sans SC", "Hiragino Sans", "Yu Gothic UI",
+          "Malgun Gothic", sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0e1116;
+          --bg-soft: #14181f;
+          --bg-card: #171b23;
+          --bg-inset: #1c212a;
+          --border: #262d38;
+          --border-strong: #333c4a;
+          --text: #e8ebf1;
+          --text-muted: #a2aab7;
+          --text-faint: #6e7787;
+          --accent: #fb923c;
+          --accent-hover: #fdba74;
+          --accent-soft: #2b1a11;
+          --success: #4ade80;
+          --warning: #fbbf24;
+          --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -16px rgba(0, 0, 0, 0.6);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 16px;
+        line-height: 1.68;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { color: var(--accent-hover); }
+      .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+      .topbar {
+        position: sticky; top: 0; z-index: 50;
+        backdrop-filter: saturate(180%) blur(12px);
+        background: color-mix(in srgb, var(--bg) 84%, transparent);
+        border-bottom: 1px solid var(--border);
+      }
+      .topbar .wrap { display: flex; align-items: center; gap: 16px; height: 60px; }
+      .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--text); }
+      .brand img { width: 26px; height: 26px; border-radius: 7px; }
+      .topbar nav { display: flex; gap: 22px; margin-left: 12px; }
+      .topbar nav a { color: var(--text-muted); font-size: 14.5px; font-weight: 500; }
+      .topbar nav a:hover { color: var(--text); }
+      .topbar .spacer { flex: 1; }
+      .lang {
+        appearance: none; background: var(--bg-card); color: var(--text-muted);
+        border: 1px solid var(--border); border-radius: 8px;
+        padding: 6px 28px 6px 10px; font: inherit; font-size: 13.5px; cursor: pointer;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' fill='none' stroke='%23828b98' stroke-width='1.5' stroke-linecap='round'/></svg>");
+        background-repeat: no-repeat; background-position: right 9px center;
+      }
+      .lang:hover { border-color: var(--border-strong); color: var(--text); }
+
+      .hero { padding: 76px 0 60px; background: linear-gradient(180deg, var(--bg-soft), var(--bg)); border-bottom: 1px solid var(--border); }
+      .hero .eyebrow {
+        display: inline-flex; align-items: center; gap: 8px;
+        font-size: 13px; font-weight: 550; color: var(--accent);
+        background: var(--accent-soft); border-radius: 999px; padding: 5px 13px; margin-bottom: 22px;
+      }
+      .hero h1 { margin: 0 0 18px; font-size: 46px; line-height: 1.1; letter-spacing: -0.025em; font-weight: 660; }
+      .hero .sub { font-size: 19px; line-height: 1.6; color: var(--text-muted); max-width: 700px; margin: 0 0 32px; }
+      .cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 9px; padding: 13px 22px;
+        border-radius: 10px; font-weight: 570; font-size: 15.5px;
+        border: 1px solid var(--border-strong); background: var(--bg-card); color: var(--text);
+        transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+      }
+      .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+      .btn small { font-weight: 450; opacity: .8; font-size: 13px; }
+      .facts { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 30px; color: var(--text-faint); font-size: 13.5px; }
+      .facts span { display: inline-flex; align-items: center; gap: 7px; }
+      .facts i { width: 5px; height: 5px; border-radius: 50%; background: var(--border-strong); }
+
+      section { padding: 68px 0; border-bottom: 1px solid var(--border); }
+      section h2 { margin: 0 0 10px; font-size: 28px; letter-spacing: -0.015em; font-weight: 640; }
+      section .lead { color: var(--text-muted); margin: 0 0 36px; max-width: 760px; font-size: 16.5px; }
+
+      .cards { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+      .card {
+        background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+        padding: 22px 24px; box-shadow: var(--shadow);
+      }
+      .card h3 { margin: 0 0 9px; font-size: 17px; font-weight: 600; }
+      .card p { margin: 0; color: var(--text-muted); font-size: 14.8px; }
+      .card code { font-family: var(--mono); font-size: 13px; background: var(--bg-inset); padding: 1.5px 6px; border-radius: 5px; }
+      .card .k { font-size: 22px; margin-bottom: 10px; display: block; }
+
+      .shots { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); }
+      figure { margin: 0; }
+      figure img {
+        width: 100%; display: block; border-radius: 12px;
+        border: 1px solid var(--border); background: var(--bg-inset); box-shadow: var(--shadow);
+      }
+      figcaption { margin-top: 12px; color: var(--text-muted); font-size: 14.5px; }
+      figcaption strong { color: var(--text); font-weight: 580; }
+
+      .checks { list-style: none; padding: 0; margin: 0; }
+      .checks li { position: relative; padding-left: 27px; margin-bottom: 11px; color: var(--text-muted); font-size: 14.8px; }
+      .checks li::before { content: "✓"; position: absolute; left: 0; color: var(--success); font-weight: 700; }
+      .checks.dash li::before { content: "—"; color: var(--text-faint); }
+
+      .two { display: grid; gap: 44px; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); }
+      .two h3 { font-size: 17px; margin: 0 0 16px; font-weight: 600; }
+
+      table { width: 100%; border-collapse: collapse; font-size: 14.8px; }
+      th, td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: top; }
+      td strong { font-weight: 600; }
+      tbody tr:hover { background: var(--bg-soft); }
+
+      .note {
+        border-left: 3px solid var(--warning); padding: 13px 17px; background: var(--bg-soft);
+        border-radius: 0 9px 9px 0; color: var(--text-muted); font-size: 14.6px;
+      }
+      .download-card {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 20px;
+        background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+        padding: 26px 28px; box-shadow: var(--shadow);
+      }
+      .download-card .info { flex: 1; min-width: 240px; }
+      .download-card .info h3 { margin: 0 0 6px; font-size: 18px; }
+      .download-card .info p { margin: 0; color: var(--text-muted); font-size: 14.5px; }
+      .platforms { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 22px; }
+
+      footer { padding: 46px 0 74px; color: var(--text-faint); font-size: 14px; }
+      footer .cols { display: flex; flex-wrap: wrap; gap: 14px 30px; }
+      footer a { color: var(--text-muted); }
+      footer a:hover { color: var(--text); }
+
+      @media (max-width: 720px) {
+        .hero h1 { font-size: 34px; }
+        .topbar nav { display: none; }
+        .shots { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="wrap">
+        <a class="brand" href="#top"><img src="./assets/icon.png" alt="" /><span>DeveAgent Studio</span></a>
+        <nav>
+          <a href="#why" data-i18n="nav.why">Why</a>
+          <a href="#shots" data-i18n="nav.shots">Screenshots</a>
+          <a href="#features" data-i18n="nav.features">Features</a>
+          <a href="#install" data-i18n="nav.install">Install</a>
+          <a href="#status" data-i18n="nav.status">Status</a>
+        </nav>
+        <span class="spacer"></span>
+        <select class="lang" id="lang" aria-label="Language"></select>
+      </div>
+    </div>
+
+    <header class="hero" id="top">
+      <div class="wrap">
+        <span class="eyebrow" data-i18n="hero.eyebrow">Bounded autonomy for long tasks</span>
+        <h1 data-i18n="hero.title">An agent workstation that shows its work.</h1>
+        <p class="sub" data-i18n="hero.sub">
+          Most AI coding tools are either a terminal with a chat box, or a pretty window that hides what
+          the model is doing. Neither survives hour six. DeveAgent Studio keeps the proven OpenCode engine
+          and adds an agent layer that is bounded, observable and recoverable.
+        </p>
+        <div class="cta">
+          <a class="btn primary" id="download" href="https://github.com/deveuper/DeveAgentStudio/releases/latest/download/DeveAgent-Studio-win-x64.exe" download>
+            <span data-i18n="hero.download">Download for Windows</span> <small data-i18n="hero.downloadMeta">180 MB · v0.2.0</small>
+          </a>
+          <a class="btn" href="https://github.com/deveuper/DeveAgentStudio" data-i18n="hero.github">View source</a>
+        </div>
+        <div class="facts">
+          <span><i></i><span data-i18n="facts.platforms">Windows · macOS · Linux</span></span>
+          <span><i></i><span data-i18n="facts.langs">29 UI languages</span></span>
+          <span><i></i><span data-i18n="facts.license">MIT licensed</span></span>
+          <span><i></i><span data-i18n="facts.byok">Bring your own key</span></span>
+        </div>
+      </div>
+    </header>
+
+    <section id="why">
+      <div class="wrap">
+        <h2 data-i18n="why.title">Why it exists</h2>
+        <p class="lead" data-i18n="why.lead">
+          The hard part is not the first answer — it is hour six. A run that cannot tell you what it
+          changed, what it spent, why it stopped, or whether it actually finished is a run you cannot
+          trust with real work.
+        </p>
+        <div class="cards">
+          <div class="card">
+            <span class="k">🎯</span>
+            <h3 data-i18n="why.bounded.title">Bounded</h3>
+            <p data-i18n="why.bounded.body">
+              Goals carry acceptance criteria, budgets and deadlines. Loops have run limits and a lease so
+              two workers never run the same pass. A goal whose usage meter cannot be read stops instead of
+              spending blind.
+            </p>
+          </div>
+          <div class="card">
+            <span class="k">📊</span>
+            <h3 data-i18n="why.observable.title">Observable</h3>
+            <p data-i18n="why.observable.body">
+              Every Goal, Loop, Team and MoA run lands in one ledger with its status, child sessions, real
+              token totals and stop reason. Cache hit rate, cost and rounds come from provider usage
+              records — never invented.
+            </p>
+          </div>
+          <div class="card">
+            <span class="k">↩︎</span>
+            <h3 data-i18n="why.recoverable.title">Recoverable</h3>
+            <p data-i18n="why.recoverable.body">
+              Each turn records a pre-turn checkpoint. Restoring one brings back both the file bytes and
+              the conversation position, and the rewind stays reversible until you send your next message.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="shots">
+      <div class="wrap">
+        <h2 data-i18n="shots.title">Screenshots</h2>
+        <p class="lead" data-i18n="shots.lead">Captured from packaged builds by the project's own acceptance probes.</p>
+        <div class="shots">
+          <figure>
+            <img src="./assets/screenshot-session.png" alt="Session workbench" />
+            <figcaption>
+              <strong data-i18n="shots.session.title">Session workbench.</strong>
+              <span data-i18n="shots.session.body">
+                Conversation, live metrics and the agent's plan in one frame. A sub-agent strip inside the
+                composer shows what is running right now.
+              </span>
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="./assets/screenshot-composer.png" alt="Composer" />
+            <figcaption>
+              <strong data-i18n="shots.composer.title">Composer.</strong>
+              <span data-i18n="shots.composer.body">
+                Mode, model, thinking level, permissions, skills and experts in one frame — reachable by
+                mouse and keyboard, light and dark, down to 860 px.
+              </span>
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="./assets/screenshot-plan.png" alt="Plan mode" />
+            <figcaption>
+              <strong data-i18n="shots.plan.title">Plan mode.</strong>
+              <span data-i18n="shots.plan.body">
+                Planning output is visually distinct from execution output, and the badge follows the mode
+                the turn actually ran in.
+              </span>
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="./assets/screenshot-sidebar.png" alt="Projects" />
+            <figcaption>
+              <strong data-i18n="shots.projects.title">Projects.</strong>
+              <span data-i18n="shots.projects.body">
+                Projects, sessions, work packs and capabilities in one scrolling column. Archiving and
+                removing never touch your files.
+              </span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="wrap">
+        <h2 data-i18n="features.title">What it does</h2>
+        <p class="lead" data-i18n="features.lead">Autonomy you can inspect, not a firehose you have to babysit.</p>
+        <table>
+          <tbody>
+            <tr>
+              <td><strong data-i18n="features.goal">Goal</strong></td>
+              <td data-i18n="features.goal.body">
+                Turns a request into acceptance criteria. When the agent claims completion, an independent
+                verifier model re-checks every criterion against the transcript — the agent that did the
+                work is not the only judge of it.
+              </td>
+            </tr>
+            <tr>
+              <td><strong data-i18n="features.go">Go mode</strong></td>
+              <td data-i18n="features.go.body">
+                One switch: submit a goal and it is confirmed automatically, running plan → execute →
+                self-verify without a confirmation round trip.
+              </td>
+            </tr>
+            <tr>
+              <td><strong data-i18n="features.loop">Loop</strong></td>
+              <td data-i18n="features.loop.body">
+                Repeat a task on an interval or cron, with run budgets, retry limits, wall-clock deadlines
+                and a lease.
+              </td>
+            </tr>
+            <tr>
+              <td><strong data-i18n="features.team">Team / MoA</strong></td>
+              <td data-i18n="features.team.body">
+                Parallel or debating members as real child sessions, each with its own model and role. A
+                failed member fails the run and can be retried individually.
+              </td>
+            </tr>
+            <tr>
+              <td><strong data-i18n="features.self">Self-improvement</strong></td>
+              <td data-i18n="features.self.body">
+                The agent can persist a reusable procedure as a skill. A provenance ledger records who wrote
+                each one — the agent may only update its own; user-authored and pinned skills are refused,
+                never silently overwritten.
+              </td>
+            </tr>
+            <tr>
+              <td><strong data-i18n="features.rewind">Rewind</strong></td>
+              <td data-i18n="features.rewind.body">
+                Per-turn checkpoints restore file bytes and conversation position; reversible until your
+                next message.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <h2 data-i18n="honest.title">Honest by construction</h2>
+        <p class="lead" data-i18n="honest.lead">Three rules the code enforces, not just the marketing copy.</p>
+        <div class="cards">
+          <div class="card">
+            <h3 data-i18n="honest.paid.title">No silent paid fallback</h3>
+            <p data-i18n="honest.paid.body">
+              A provider fallback may only switch to a model whose cost is known to be zero. Paid candidates
+              are skipped by default, and when a switch happens you get an in-app announcement — not just a
+              log line.
+            </p>
+          </div>
+          <div class="card">
+            <h3 data-i18n="honest.numbers.title">No invented numbers</h3>
+            <p data-i18n="honest.numbers.body">
+              When the provider returns no usage, the UI says "not returned" instead of showing 0. Unknown
+              usage stays unknown in the ledger too.
+            </p>
+          </div>
+          <div class="card">
+            <h3 data-i18n="honest.progress.title">No fake progress</h3>
+            <p data-i18n="honest.progress.body">
+              A failed child turn fails the task. A swallowed error that once let a run report success while
+              its model returned 500s was traced to the wait seam and fixed with a regression probe.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="install">
+      <div class="wrap">
+        <h2 data-i18n="install.title">Install</h2>
+        <p class="lead" data-i18n="install.lead">One file, no runtime to install first.</p>
+        <div class="download-card">
+          <div class="info">
+            <h3 data-i18n="install.win">Windows 10 / 11 · x64</h3>
+            <p data-i18n="install.win.body">DeveAgent-Studio-win-x64.exe · 180 MB · installer</p>
+          </div>
+          <a class="btn primary" href="https://github.com/deveuper/DeveAgentStudio/releases/latest/download/DeveAgent-Studio-win-x64.exe" download data-i18n="install.button">Download</a>
+        </div>
+        <div class="platforms">
+          <div class="card">
+            <h3 data-i18n="install.mac">macOS</h3>
+            <p data-i18n="install.mac.body">Build from source today; signed builds are on the roadmap.</p>
+          </div>
+          <div class="card">
+            <h3 data-i18n="install.linux">Linux</h3>
+            <p data-i18n="install.linux.body">AppImage and deb builds are produced by the packaging script.</p>
+          </div>
+        </div>
+        <div class="two" style="margin-top: 34px;">
+          <div>
+            <h3 data-i18n="install.first.title">First run</h3>
+            <p style="color: var(--text-muted); margin-top: 0;" data-i18n="install.first.body">
+              Open Settings → Providers and connect any OpenAI-compatible endpoint, including free tiers.
+              Nothing is bundled and nothing is proxied — your keys stay on your machine.
+            </p>
+          </div>
+          <div>
+            <h3 data-i18n="install.unsigned.title">About the warning</h3>
+            <div class="note" data-i18n="install.unsigned.body">
+              The installer is unsigned, so Windows SmartScreen will ask you to confirm. Code signing is on
+              the roadmap.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="status">
+      <div class="wrap">
+        <h2 data-i18n="status.title">Status and boundaries</h2>
+        <div class="two">
+          <div>
+            <h3 data-i18n="status.verified">Verified today</h3>
+            <ul class="checks">
+              <li data-i18n="status.v1">535 app unit tests, 274 agent-runtime tests, 6 locale-parity gates — green</li>
+              <li data-i18n="status.v2">Acceptance probes run against packaged builds: real-model smoke, plan mode, loop, background tasks, MoA debate, team retry, rewind, MCP connect and failure states, composer geometry, status-bar geometry, startup timing, cache A/B</li>
+              <li data-i18n="status.v3">Cache A/B measured: a mode switch leaves 100% of the prompt prefix bytes unchanged</li>
+            </ul>
+          </div>
+          <div>
+            <h3 data-i18n="status.unverified">Not verified — do not claim</h3>
+            <ul class="checks dash">
+              <li data-i18n="status.u1">No multi-hour real-workload soak test has been run; recovery paths are covered by fixtures and free models</li>
+              <li data-i18n="status.u2">Model quality is whatever provider you connect — this project does not make a model smarter</li>
+              <li data-i18n="status.u3">Computer Use covers window inventory, focus, UI element trees and input on Windows; desktop OCR and cross-application workflows are not claimed</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap">
+        <div class="cols">
+          <span data-i18n="footer.built">Built on OpenCode (MIT)</span>
+          <a href="https://github.com/deveuper/DeveAgentStudio" data-i18n="footer.repo">Source</a>
+          <a href="https://github.com/deveuper/DeveAgentStudio/releases" data-i18n="footer.releases">All releases</a>
+          <a href="https://github.com/deveuper/DeveAgentStudio/blob/main/LICENSE" data-i18n="footer.license">License</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./i18n.js"></script>
+  </body>
+</html>
