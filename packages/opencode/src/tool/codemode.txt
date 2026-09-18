@@ -1,0 +1,32 @@
+Run a whole search-heavy investigation with ONE tool call by writing a short JavaScript program.
+
+Write the BODY of an async function (not a full function). Inside it you can `await` these
+read-only helpers, which are injected into the sandbox:
+
+- `glob(pattern: string): Promise<string[]>` - file paths relative to the workspace
+  (e.g. `await glob("src/**/*.ts")`)
+- `grep(pattern: string, path?: string): Promise<string>` - content search (regex), same
+  engine as the grep tool. Returns `path:line: text` rows, at most 100 matches.
+- `read(path: string): Promise<string>` - read a text file (relative or absolute path,
+  capped at ~10000 chars)
+- `list(path?: string): Promise<string[]>` - directory listing; directories have a
+  trailing `/`
+
+Everything you return is JSON-serialized and given back to you (capped at 16000 chars,
+with a `...[truncated]` marker if cut). Anything you `console.log` is capped at 2000
+chars and appended after the returned value. Intermediate results never enter your
+context - only the final return value does, so aggregate inside the snippet (count,
+filter, join, build a summary object) instead of returning raw dumps.
+
+Rules:
+- Helpers are strictly read-only and workspace-contained. There is no write, bash,
+  fetch, require, or process access. Paths resolving outside the workspace are rejected.
+- Total runtime is capped at 30 seconds. Avoid unbounded loops; a synchronous infinite
+  loop cannot be interrupted mid-flight and fails the whole call.
+- The code must be a single async function body ending in `return <json-safe value>`.
+  Do not use `require`, `import`, `fetch`, `setTimeout`, or `process`.
+
+Use this tool instead of many separate grep/glob/read calls when the task needs several
+rounds of searching (e.g. "find all files mentioning X, then read the top 5 and compare").
+Use the dedicated tools instead when you need a single search, permissioned actions, or
+anything not in the helper list above.
