@@ -1,0 +1,688 @@
+import {
+  createEffect,
+  createMemo,
+  Match,
+  Show,
+  Switch,
+  untrack,
+} from "solid-js"
+import { createStore } from "solid-js/store"
+import { useLocation, useNavigate, useParams } from "@solidjs/router"
+import { IconButton } from "@opencode-ai/ui/icon-button"
+import { Icon } from "@opencode-ai/ui/icon"
+import { Button } from "@opencode-ai/ui/button"
+import { Tooltip, TooltipKeybind } from "@opencode-ai/ui/tooltip"
+import { useTheme } from "@opencode-ai/ui/theme/context"
+import { IconButtonV2 } from "@opencode-ai/ui/v2/icon-button-v2"
+import { Icon as IconV2 } from "@opencode-ai/ui/v2/icon"
+import { KeybindV2 } from "@opencode-ai/ui/v2/keybind-v2"
+import { TooltipV2 } from "@opencode-ai/ui/v2/tooltip-v2"
+
+import { LayoutRoute, useLayout } from "@/context/layout"
+import { usePlatform } from "@/context/platform"
+import { useCommand } from "@/context/command"
+import { useLanguage } from "@/context/language"
+import { useSettings } from "@/context/settings"
+import { WindowsAppMenu } from "./windows-app-menu"
+import { applyPath, backPath, forwardPath } from "./titlebar-history"
+import { useServerSync } from "@/context/server-sync"
+import { base64Encode } from "@opencode-ai/core/util/encode"
+import { makeEventListener } from "@solid-primitives/event-listener"
+import { readSessionTabsRemovedDetail, SESSION_TABS_REMOVED_EVENT } from "@/components/titlebar-session-events"
+import { useServer } from "@/context/server"
+import { useTabs } from "@/context/tabs"
+import "./titlebar.css"
+
+type TauriDesktopWindow = {
+  startDragging?: () => Promise<void>
+  toggleMaximize?: () => Promise<void>
+}
+
+type TauriThemeWindow = {
+  setTheme?: (theme?: "light" | "dark" | null) => Promise<void>
+}
+
+type TauriApi = {
+  window?: {
+    getCurrentWindow?: () => TauriDesktopWindow
+  }
+  webviewWindow?: {
+    getCurrentWebviewWindow?: () => TauriThemeWindow
+  }
+}
+
+const tauriApi = () => (window as unknown as { __TAURI__?: TauriApi }).__TAURI__
+const currentDesktopWindow = () => tauriApi()?.window?.getCurrentWindow?.()
+const currentThemeWindow = () => tauriApi()?.webviewWindow?.getCurrentWebviewWindow?.()
+const legacyTitlebarHeight = 40
+const v2TitlebarHeight = 36
+const minTitlebarZoom = 0.25
+const windowsControlsBaseWidth = 138 // 3 native Windows caption buttons at 46px each.
+
+export type TitlebarUpdate = {
+  version: () => string | undefined
+  installing: () => boolean
+  install: () => void
+}
+
+export function Titlebar(props: { update?: TitlebarUpdate }) {
+  const layout = useLayout()
+  const platform = usePlatform()
+  const command = useCommand()
+  const language = useLanguage()
+  const settings = useSettings()
+  const theme = useTheme()
+  const server = useServer()
+  const tabs = useTabs()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const params = useParams()
+  // ponytail: DeveAgent keeps sessions in the left workbench. Never fall back to
+  // OpenCode's legacy titlebar, which renders a second session strip above it.
+  const useV2Titlebar = () => true
+
+  const mac = createMemo(() => platform.platform === "desktop" && platform.os === "macos")
+  const windows = createMemo(() => platform.platform === "desktop" && platform.os === "windows")
+  const electronWindows = createMemo(() => windows() && !tauriApi())
+  const linux = createMemo(() => platform.platform === "desktop" && platform.os === "linux")
+  const web = createMemo(() => platform.platform === "web")
+  const zoom = () => platform.webviewZoom?.() ?? 1
+  const titlebarZoom = () => (windows() ? Math.max(zoom(), minTitlebarZoom) : zoom())
+  const counterZoom = () => (windows() && titlebarZoom() < 1 ? 1 / titlebarZoom() : 1)
+  const minHeight = () => {
+    const height = useV2Titlebar() ? v2TitlebarHeight : legacyTitlebarHeight
+    if (mac()) return `${height / zoom()}px`
+    if (windows()) return `${height / Math.min(titlebarZoom(), 1)}px`
+    return undefined
+  }
+  const windowsControlsWidth = () => `${windowsControlsBaseWidth / Math.max(titlebarZoom(), 1)}px`
+
+  const [history, setHistory] = createStore({
+    stack: [] as string[],
+    index: 0,
+    action: undefined as "back" | "forward" | undefined,
+  })
+
+  const path = () => `${location.pathname}${location.search}${location.hash}`
+  const creating = createMemo(() => {
+    if (!params.dir) return false
+    if (params.id) return false
+    const parts = location.pathname.replace(/\/+$/, "").split("/")
+    return parts.at(-1) === "session"
+  })
+
+  createEffect(() => {
+    const current = path()
+
+    untrack(() => {
+      const next = applyPath(history, current)
+      if (next === history) return
+      setHistory(next)
+    })
+  })
+
+  makeEventListener(window, SESSION_TABS_REMOVED_EVENT, (event) => {
+    const detail = readSessionTabsRemovedDetail(event)
+    if (!detail) return
+    tabs.removeSessions(detail)
+  })
+
+  const canBack = createMemo(() => history.index > 0)
+  const canForward = createMemo(() => history.index < history.stack.length - 1)
+  const hasProjects = createMemo(() => layout.projects.list().length > 0)
+  const nav = createMemo(() => (useV2Titlebar() ? settings.general.showNavigation() : true))
+  const updateState = createMemo<TitlebarUpdatePillState>(() => {
+    const installing = props.update?.installing() ?? false
+    const version = props.update?.version()
+    return {
+      visible: version !== undefined || installing,
+      installing,
+      label: "Update",
+      ariaLabel: language.t("toast.update.action.installRestart"),
+      title: version ? `Update ${version}` : undefined,
+      onInstall: () => props.update?.install(),
+    }
+  })
+  const v2RightState = createMemo<TitlebarV2RightState>(() => ({
+    update: updateState(),
+  }))
+
+  const back = () => {
+    const next = backPath(history)
+    if (!next) return
+    setHistory(next.state)
+    navigate(next.to)
+  }
+
+  const forward = () => {
+    const next = forwardPath(history)
+    if (!next) return
+    setHistory(next.state)
+    navigate(next.to)
+  }
+
+  command.register(() => [
+    {
+      id: "common.goBack",
+      title: language.t("common.goBack"),
+      category: language.t("command.category.view"),
+      keybind: "mod+[",
+      onSelect: back,
+    },
+    {
+      id: "common.goForward",
+      title: language.t("common.goForward"),
+      category: language.t("command.category.view"),
+      keybind: "mod+]",
+      onSelect: forward,
+    },
+  ])
+
+  const getWin = () => {
+    if (platform.platform !== "desktop") return
+    return currentDesktopWindow()
+  }
+
+  createEffect(() => {
+    if (platform.platform !== "desktop") return
+
+    const scheme = theme.colorScheme()
+    const value = scheme === "system" ? null : scheme
+
+    const win = currentThemeWindow()
+    if (!win?.setTheme) return
+
+    void win.setTheme(value).catch(() => undefined)
+  })
+
+  const interactive = (target: EventTarget | null) => {
+    if (!(target instanceof Element)) return false
+
+    const selector =
+      "button, a, input, textarea, select, option, [role='button'], [role='menuitem'], [contenteditable='true'], [contenteditable='']"
+
+    return !!target.closest(selector)
+  }
+
+  const drag = (e: MouseEvent) => {
+    if (platform.platform !== "desktop") return
+    if (e.buttons !== 1) return
+    if (interactive(e.target)) return
+
+    const win = getWin()
+    if (!win?.startDragging) return
+
+    e.preventDefault()
+    void win.startDragging().catch(() => undefined)
+  }
+
+  const maximize = (e: MouseEvent) => {
+    if (platform.platform !== "desktop") return
+    if (interactive(e.target)) return
+    if (e.target instanceof Element && e.target.closest("[data-tauri-decorum-tb]")) return
+
+    const win = getWin()
+    if (!win?.toggleMaximize) return
+
+    e.preventDefault()
+    void win.toggleMaximize().catch(() => undefined)
+  }
+
+  return (
+    <header
+      classList={{
+        "shrink-0 relative flex flex-row": true,
+        "h-9 border-b border-v2-border-border-muted bg-v2-background-bg-deep overflow-visible": useV2Titlebar(),
+        "h-10 bg-background-base overflow-hidden": !useV2Titlebar(),
+      }}
+      style={{
+        "min-height": minHeight(),
+        "padding-left": mac() ? `${84 / zoom()}px` : 0,
+        // Electron can report a stale titlebar-area-width after a zoom or
+        // viewport resize. Clamp it to the actual app content box so the
+        // custom shell never creates horizontal overflow.
+        width: electronWindows()
+          ? `min(100%, env(titlebar-area-width, calc(100vw - ${windowsControlsWidth()})))`
+          : undefined,
+        "max-width": electronWindows() ? "100%" : undefined,
+        "align-self": electronWindows() ? "flex-start" : undefined,
+      }}
+      data-tauri-drag-region
+      onMouseDown={drag}
+      onDblClick={maximize}
+    >
+      <Switch>
+        <Match when={useV2Titlebar()}>
+          {(_) => {
+            const serverSync = useServerSync()
+            const navigate = useNavigate()
+            const layout = useLayout()
+
+            const newSessionHref = () => {
+              if (params.dir) return `/${params.dir}/session`
+
+              const project = layout.projects.list()[0]
+              if (!project) return "/"
+
+              return `/${base64Encode(project.worktree)}/session`
+            }
+
+            const tabsStore = tabs.store
+            const tabsStoreActions = tabs
+
+            const matchRoute = (route: LayoutRoute) => {
+              if (route.type === "home") return
+              if (route.type === "draft") {
+                return tabsStore.find((item) => item.type === "draft" && item.draftID === route.draftID)
+              }
+              if (route.type === "session") {
+                const main = tabsStore.find(
+                  (item) =>
+                    item.type === "session" && item.server === route.server && item.sessionId === route.sessionId,
+                )
+                if (main) return main
+                const sync = serverSync().createDirSyncContext(route.dir)
+                const session = sync.session.get(route.sessionId)
+                if (session?.parentID) {
+                  const parentID = session.parentID
+                  const parent = tabsStore.find(
+                    (item) => item.type === "session" && item.server === route.server && item.sessionId === parentID,
+                  )
+                  if (parent) return parent
+                }
+              }
+            }
+
+            const currentTab = () => matchRoute(layout.route())
+
+            createEffect(() => {
+              const route = layout.route()
+              if (!tabs.ready()) return
+              const tab = currentTab()
+              if (tab) {
+                tabs.remember(tab)
+                return
+              }
+
+              if (route.type === "session") {
+                const sync = serverSync().createDirSyncContext(route.dir)
+                const session = sync.session.get(route.sessionId)
+                if (!session) return
+                const sessionId = session.parentID ?? session.id
+                const next = {
+                  server: route.server ?? server.key,
+                  dirBase64: route.dirBase64,
+                  sessionId,
+                }
+                tabsStoreActions.addSessionTab(next)
+              }
+            })
+
+            const openNewTab = () => navigate(newSessionHref())
+            const toggleHome = () => tabs.toggleHome({ home: layout.route().type === "home", current: currentTab() })
+
+            command.register("titlebar-home", () => [
+              {
+                id: "home.toggle",
+                title: language.t("home.title"),
+                category: language.t("command.category.view"),
+                keybind: "mod+b",
+                hidden: true,
+                onSelect: toggleHome,
+              },
+            ])
+
+            command.register("tabs", () => {
+              const current = currentTab()
+
+              return [
+                {
+                  id: "tab.new",
+                  category: "tab",
+                  title: language.t("command.session.new"),
+                  keybind: "mod+t",
+                  hidden: true,
+                  onSelect: openNewTab,
+                },
+                current && {
+                  id: "tab.close",
+                  category: "tab",
+                  title: language.t("command.tab.close"),
+                  keybind: "mod+w",
+                  hidden: true,
+                  onSelect: () => {
+                    tabsStoreActions.removeTab(tabsStore.findIndex((tab) => current === tab))
+                  },
+                },
+                {
+                  id: `tab.prev`,
+                  category: "tab",
+                  title: "",
+                  keybind: `mod+option+ArrowLeft`,
+                  hidden: true,
+                  onSelect: () => {
+                    let index = tabsStore.findIndex((tab) => tab === currentTab())
+                    if (index === -1) return
+
+                    index -= 1
+                    if (index === -1) index = tabsStore.length - 1
+
+                    const next = tabsStore[index]
+                    if (next) tabs.select(next)
+                  },
+                },
+                {
+                  id: `tab.next`,
+                  category: "tab",
+                  title: "",
+                  keybind: `mod+option+ArrowRight`,
+                  hidden: true,
+                  onSelect: () => {
+                    let index = tabsStore.findIndex((tab) => tab === currentTab())
+                    if (index === -1) return
+
+                    index += 1
+                    if (index === tabsStore.length) index = 0
+
+                    const next = tabsStore[index]
+                    if (next) tabs.select(next)
+                  },
+                },
+                ...Array.from({ length: 9 }, (_, i) => {
+                  const index = i
+                  const number = index + 1
+                  return {
+                    id: `tab.${number}`,
+                    category: "tab",
+                    title: "",
+                    keybind: `mod+${number}`,
+                    disabled: layout.projects.list().length <= index,
+                    hidden: true,
+                    onSelect: () => {
+                      const tab = tabsStore[index]
+                      if (tab) tabs.select(tab)
+                    },
+                  }
+                }),
+              ].filter((v) => v !== undefined)
+            })
+
+            return (
+              <div
+                class="h-full flex-1 overflow-hidden flex flex-row items-center gap-1.5 pr-3 pt-2"
+                classList={{
+                  "pl-2": mac(),
+                  "pl-4": !mac(),
+                }}
+              >
+                <ChannelIndicator />
+                <Show when={windows() || linux()}>
+                  <WindowsAppMenu command={command} platform={platform} variant="v2" />
+                </Show>
+                <TooltipV2
+                  placement="bottom"
+                  value={
+                    <>
+                      {language.t("home.title")}
+                      <KeybindV2 keys={command.keybindParts("home.toggle")} variant="neutral" />
+                    </>
+                  }
+                  class="shrink-0"
+                >
+                  <IconButtonV2
+                    type="button"
+                    variant="ghost-muted"
+                    size="large"
+                    class="!w-9 shrink-0"
+                    icon={<IconV2 name="grid-plus" />}
+                    state={layout.route().type === "home" ? "pressed" : undefined}
+                    onClick={toggleHome}
+                    aria-label={language.t("home.title")}
+                    aria-pressed={layout.route().type === "home"}
+                  />
+                </TooltipV2>
+
+                <Show when={!(creating() && params.dir)}>
+                  <IconButtonV2
+                    type="button"
+                    variant="ghost-muted"
+                    size="large"
+                    class="shrink-0"
+                    icon={<IconV2 name="plus" />}
+                    as="a"
+                    href={newSessionHref()}
+                    aria-label={language.t("command.session.new")}
+                  />
+                </Show>
+                <div class="flex-1" />
+                <TitlebarV2Right state={v2RightState()} />
+                <Show when={windows() && !electronWindows()}>
+                  <div data-tauri-decorum-tb class="flex flex-row" />
+                </Show>
+              </div>
+            )
+          }}
+        </Match>
+        <Match when>
+          <div
+            class="grid h-full min-h-full w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center"
+            style={{ zoom: counterZoom() }}
+          >
+            <div
+              classList={{
+                "flex items-center min-w-0": true,
+                "pl-2": !mac(),
+              }}
+            >
+              <Show when={windows() || linux()}>
+                <WindowsAppMenu command={command} platform={platform} />
+              </Show>
+              <Show when={mac()}>
+                {/*<div class="h-full shrink-0" style={{ width: `${72 / zoom()}px` }} />*/}
+                <div class="xl:hidden w-10 shrink-0 flex items-center justify-center">
+                  <IconButton
+                    icon="menu"
+                    variant="ghost"
+                    class="titlebar-icon rounded-md"
+                    onClick={layout.mobileSidebar.toggle}
+                    aria-label={language.t("sidebar.menu.toggle")}
+                    aria-expanded={layout.mobileSidebar.opened()}
+                  />
+                </div>
+              </Show>
+              <Show when={!mac()}>
+                <div class="xl:hidden w-[48px] shrink-0 flex items-center justify-center">
+                  <IconButton
+                    icon="menu"
+                    variant="ghost"
+                    class="titlebar-icon rounded-md"
+                    onClick={layout.mobileSidebar.toggle}
+                    aria-label={language.t("sidebar.menu.toggle")}
+                    aria-expanded={layout.mobileSidebar.opened()}
+                  />
+                </div>
+              </Show>
+              <div class="flex items-center gap-1 shrink-0">
+                <TooltipKeybind
+                  class={web() ? "hidden xl:flex shrink-0 ml-14" : "hidden xl:flex shrink-0 ml-2"}
+                  placement="bottom"
+                  title={language.t("command.sidebar.toggle")}
+                  keybind={command.keybind("sidebar.toggle")}
+                >
+                  <Button
+                    variant="ghost"
+                    class="group/sidebar-toggle titlebar-icon w-8 h-6 p-0 box-border"
+                    onClick={layout.sidebar.toggle}
+                    aria-label={language.t("command.sidebar.toggle")}
+                    aria-expanded={layout.sidebar.opened()}
+                  >
+                    <Icon size="small" name={layout.sidebar.opened() ? "sidebar-active" : "sidebar"} />
+                  </Button>
+                </TooltipKeybind>
+                <div class="hidden xl:flex items-center shrink-0">
+                  <Show when={params.dir}>
+                    <div
+                      class="flex items-center shrink-0 w-8 mr-1"
+                      aria-hidden={layout.sidebar.opened() ? "true" : undefined}
+                    >
+                      <div
+                        class="transition-opacity"
+                        classList={{
+                          "opacity-100 duration-120 ease-out": !layout.sidebar.opened(),
+                          "opacity-0 duration-120 ease-in delay-0 pointer-events-none": layout.sidebar.opened(),
+                        }}
+                      >
+                        <TooltipKeybind
+                          placement="bottom"
+                          title={language.t("command.session.new")}
+                          keybind={command.keybind("session.new")}
+                          openDelay={2000}
+                        >
+                          <Button
+                            variant="ghost"
+                            icon={creating() ? "new-session-active" : "new-session"}
+                            class="titlebar-icon w-8 h-6 p-0 box-border"
+                            disabled={layout.sidebar.opened()}
+                            tabIndex={layout.sidebar.opened() ? -1 : undefined}
+                            onClick={() => {
+                              if (!params.dir) return
+                              navigate(`/${params.dir}/session`)
+                            }}
+                            aria-label={language.t("command.session.new")}
+                            aria-current={creating() ? "page" : undefined}
+                          />
+                        </TooltipKeybind>
+                      </div>
+                    </div>
+                  </Show>
+                  <div
+                    class="flex items-center shrink-0"
+                    classList={{
+                      "-translate-x-[36px]": layout.sidebar.opened() && !!params.dir,
+                      "duration-180 ease-out": !layout.sidebar.opened(),
+                      "duration-180 ease-in": layout.sidebar.opened(),
+                    }}
+                  >
+                    <Show when={hasProjects() && nav()}>
+                      <div class="flex items-center gap-0 transition-transform">
+                        <Tooltip placement="bottom" value={language.t("common.goBack")} openDelay={2000}>
+                          <Button
+                            variant="ghost"
+                            icon="chevron-left"
+                            class="titlebar-icon w-6 h-6 p-0 box-border"
+                            disabled={!canBack()}
+                            onClick={back}
+                            aria-label={language.t("common.goBack")}
+                          />
+                        </Tooltip>
+                        <Tooltip placement="bottom" value={language.t("common.goForward")} openDelay={2000}>
+                          <Button
+                            variant="ghost"
+                            icon="chevron-right"
+                            class="titlebar-icon w-6 h-6 p-0 box-border"
+                            disabled={!canForward()}
+                            onClick={forward}
+                            aria-label={language.t("common.goForward")}
+                          />
+                        </Tooltip>
+                      </div>
+                    </Show>
+                    <div id="opencode-titlebar-left" class="flex items-center gap-3 min-w-0 px-2" />
+                    <ChannelIndicator />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="min-w-0 flex items-center justify-center pointer-events-none">
+              <div
+                id="opencode-titlebar-center"
+                class="pointer-events-auto min-w-0 flex justify-center w-fit max-w-full"
+              />
+            </div>
+
+            <div
+              classList={{
+                "flex items-center min-w-0 justify-end": true,
+                "pr-2": !windows(),
+              }}
+              data-tauri-drag-region
+              onMouseDown={drag}
+            >
+              <div id="opencode-titlebar-right" class="flex items-center gap-1 shrink-0 justify-end" />
+              <Show when={windows()}>
+                {!tauriApi() && <div class="shrink-0" style={{ width: windowsControlsWidth() }} />}
+                <div data-tauri-decorum-tb class="flex flex-row" />
+              </Show>
+            </div>
+          </div>
+        </Match>
+      </Switch>
+    </header>
+  )
+}
+
+type TitlebarUpdatePillState = {
+  visible: boolean
+  installing: boolean
+  label: string
+  ariaLabel: string
+  title?: string
+  onInstall: () => void
+}
+
+type TitlebarV2RightState = {
+  update: TitlebarUpdatePillState
+}
+
+function TitlebarV2Right(props: { state: TitlebarV2RightState }) {
+  return (
+    <div class="relative z-20 flex shrink-0 items-center justify-end gap-0 overflow-visible">
+      <Show when={props.state.update.visible}>
+        <TitlebarUpdateIconButton state={props.state.update} />
+      </Show>
+      <div id="opencode-titlebar-right" class="flex shrink-0 items-center justify-end gap-0" />
+    </div>
+  )
+}
+
+function TitlebarUpdateIconButton(props: { state: TitlebarUpdatePillState }) {
+  return (
+    <div class="relative isolate mr-3 size-5 shrink-0">
+      <button
+        type="button"
+        class="group absolute right-0 top-0 z-10 flex h-5 w-5 items-center justify-end overflow-hidden rounded-full bg-v2-icon-icon-accent/20 text-v2-icon-icon-accent transition-[width,background-color] duration-150 ease-out hover:z-30 hover:w-[68px] hover:bg-[color-mix(in_srgb,var(--v2-icon-icon-accent)_20%,var(--v2-background-bg-deep))] focus-visible:z-30 focus-visible:w-[68px] focus-visible:bg-[color-mix(in_srgb,var(--v2-icon-icon-accent)_20%,var(--v2-background-bg-deep))] focus-visible:outline-none disabled:opacity-60 motion-reduce:transition-none"
+        onClick={props.state.onInstall}
+        disabled={props.state.installing}
+        aria-busy={props.state.installing}
+        aria-label={props.state.ariaLabel}
+      >
+        <span class="shrink-0 ml-[8px] mr-px text-[11px] text-v2-text-text-accent [font-weight:530] opacity-0 translate-x-2 motion-safe:transition-all duration-150 ease-out group-hover:opacity-100 group-hover:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:translate-x-0 motion-reduce:translate-x-0">
+          Update
+        </span>
+        <span class="flex size-5 shrink-0 items-center justify-center">
+          <Show
+            when={!props.state.installing}
+            fallback={<span data-slot="titlebar-update-loader" aria-hidden="true" />}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M7 11V3M3.5 7.63128L7 11L10.5 7.63128" stroke="currentColor" />
+            </svg>
+          </Show>
+        </span>
+      </button>
+    </div>
+  )
+}
+
+function ChannelIndicator() {
+  return (
+    <>
+      {["beta", "dev"].includes(import.meta.env.VITE_OPENCODE_CHANNEL) && (
+        <div class="text-v2-text-text-muted font-medium px-1.5 rounded-sm uppercase font-mono">
+          {import.meta.env.VITE_OPENCODE_CHANNEL.toUpperCase()}
+        </div>
+      )}
+    </>
+  )
+}
