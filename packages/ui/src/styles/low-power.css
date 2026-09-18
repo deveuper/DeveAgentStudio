@@ -1,0 +1,26 @@
+/*
+ * DeveAgent low power mode (Settings → General → Low power mode).
+ *
+ * The setting flips `data-low-power="true"` on <html>. Decorative motion is the
+ * first thing to go on a 2015 MacBook Pro or a SteamDeck: pulses, shimmer,
+ * typewriter and reveal animations all collapse to a single instant frame, and
+ * transitions are shortened to effectively zero.
+ *
+ * Loading spinners stay animated — a frozen spinner reads as a hang, which is
+ * worse than the frame cost it saves.
+ */
+[data-low-power="true"] {
+  --animate-pulse: none;
+  --animate-pulse-scale: none;
+}
+
+[data-low-power="true"] *:not([data-component="spinner"]):not([data-component="spinner"] *),
+[data-low-power="true"] *:not([data-component="spinner"]):not([data-component="spinner"] *)::before,
+[data-low-power="true"] *:not([data-component="spinner"]):not([data-component="spinner"] *)::after {
+  animation-duration: 0.01ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: 0ms !important;
+  scroll-behavior: auto !important;
+}
