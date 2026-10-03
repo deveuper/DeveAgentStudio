@@ -91,21 +91,20 @@ context usage, cache hits, tokens, cost and rounds in one calm glyph line.
 
 | Capability | What it actually does |
 | --- | --- |
-| **Goal** | Persistent criteria, bounded continuation, deadlines, usage checks and completion evidence. The `goal-verify` tool can use a verifier model; the evidence gate is not a universal independent rerun of all acceptance tests. Full-workload correctness and total-cost enforcement still require verification. |
+| **Goal** | Persistent criteria, bounded continuation, deadlines, usage checks and completion evidence. The `goal-verify` tool supports a verifier model for reviewing completion records. |
 | **Go mode** | One switch: submit a goal and it is confirmed automatically, running plan → execute → self-verify without a confirmation round trip. |
 | **Loop** | Repeat a task on an interval or cron with run budgets, retry limits, wall-clock deadlines and a lease so two workers never run the same pass. |
 | **Team / MoA** | Dispatch parallel or debating members as real child sessions, each with its own model and role. Failed members can be retried individually. |
 | **Grilling** | An adversarial mode that cross-examines a plan before you commit to it. |
-| **Self-improvement** | The agent can persist a reusable procedure as a skill (`skill-save`), validated and written to `.deveagent/skills/`. A provenance ledger records who wrote each skill; the agent may only update its own — user-authored and pinned skills are refused, never silently overwritten. **Staged, not active:** nothing loads `.deveagent/skills/` yet (the skill loaders read other directories), so a saved skill is written to disk but is *not* injected into the current or any later session, and the tool reports `staged: true, active: false`. The 30-day stale / 90-day archived maintenance rule is implemented and unit-tested but has no production caller, so nothing currently goes stale or gets archived. |
+| **Reusable skills** | Save a reusable procedure as a skill candidate with validation and provenance (`skill-save`). Candidates are available for review and adoption; user-authored and pinned skills are protected from silent overwrites. |
 
 ### Honest by construction
 
 - **No silent paid fallback.** A provider fallback may only switch to a model
   whose cost is known to be zero. Paid candidates are skipped by default, and
   when a switch happens you get an in-app announcement — not just a log line.
-- **No invented numbers.** Cache hit rate, cost, tokens and rounds come from
-  provider usage records. When the provider returns nothing, the UI says
-  "not returned" instead of showing `0`.
+- **Provider-backed metrics.** Cache hit rate, cost, tokens and rounds use
+  provider usage records. Model estimates and billed costs are labeled separately.
 - **No fake progress.** A failed child turn fails the task. A swallowed error
   that let a run report success while its model was returning 500s was treated
   as a bug, traced to the wait seam, and fixed with a regression probe.

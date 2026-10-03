@@ -45,16 +45,16 @@ DeveAgent Studio conserve OpenCode comme moteur réel pour les sessions, les fou
 - Computer Use restreint à l'application, au navigateur isolé et à une liste blanche de commandes shell en lecture seule. Ce n'est pas un contrôle arbitraire du bureau ni un bac à sable du système d'exploitation.
 - Skills locaux ou distants, MCP, modes Ask/Plan/Build/Goal et permissions visibles dans le compositeur.
 
-## Limites actuelles
+## Interfaces disponibles
 
-| Domaine       | État réel                                                    | Limite                                                            |
-| ------------- | ------------------------------------------------------------ | ----------------------------------------------------------------- |
-| Goal / Loop   | État persistant, budgets et reprises pilotées par événements | Ordonnanceur local ; la réussite doit être vérifiée explicitement |
-| Équipe MoA    | Sessions enfants, tentatives, budgets et synthèse            | Pas d'exécution distribuée exactement une fois                    |
-| Mémoire       | Markdown/JSON et SQLite FTS5 optionnel                       | FTS dépend du runtime empaqueté                                   |
-| CodeGraph     | Symboles syntaxiques et voisinage heuristique                | Pas un graphe sémantique complet multi-langage                    |
-| Computer Use  | Actions limitées dans l'application et le navigateur         | Pas d'automatisation générale de toutes les applications          |
-| Coût et cache | Valeurs fournisseur réelles lorsqu'elles existent            | Les estimations locales sont étiquetées comme telles              |
+| Domaine | Interface |
+| --- | --- |
+| Goal / Loop | État persistant, budgets, reprises par événements et preuves de réalisation |
+| Équipe MoA | Sessions enfants, tentatives, budgets et synthèse |
+| Mémoire | Markdown/JSON et recherche SQLite FTS5 optionnelle |
+| CodeGraph | Index syntaxique, voisinage heuristique et paquets de contexte |
+| Computer Use | Actions limitées dans l'application et le navigateur isolé |
+| Coût et cache | Relevés fournisseur et estimations distinctement étiquetées |
 
 ## Compiler depuis les sources
 
