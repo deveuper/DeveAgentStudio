@@ -100,8 +100,8 @@
       }
       .hero h1 { margin: 0 0 10px; font-size: 36px; line-height: 1.2; letter-spacing: 0; font-weight: 660; }
       .hero .sub { font-size: 16px; line-height: 1.6; color: var(--text-muted); max-width: 880px; margin: 0 0 18px; }
-      .hero figure { margin-top: 22px; }
-      .hero figure img { height: auto; max-height: 340px; object-fit: contain; border: 0; border-radius: 0; box-shadow: none; }
+      .product-preview { padding: 0 0 36px; }
+      .product-preview img { width: 100%; height: auto; display: block; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
       .guide-links { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; font-size: 14px; }
       .cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
       .btn {
@@ -212,9 +212,8 @@
         <span class="eyebrow" data-i18n="hero.eyebrow">Bounded autonomy for long tasks</span>
         <h1>DeveAgent Studio</h1>
         <p class="sub" data-i18n="hero.sub">
-          Most AI coding tools are either a terminal with a chat box, or a pretty window that hides what
-          the model is doing. Neither survives hour six. DeveAgent Studio keeps the proven OpenCode engine
-          and adds an agent layer that is bounded, observable and recoverable.
+          Turn ideas into code and keep complex work moving. Connect the models you choose,
+          then plan, build and collaborate in one workspace.
         </p>
         <div class="cta">
           <a class="btn primary" id="download" href="https://github.com/deveuper/DeveAgentStudio/releases/latest/download/DeveAgent-Studio-win-x64.exe" download="DeveAgent-Studio-win-x64.exe">
@@ -234,43 +233,42 @@
           <span><i></i><span data-i18n="facts.license">MIT licensed</span></span>
           <span><i></i><span data-i18n="facts.byok">Bring your own key</span></span>
         </div>
-        <figure>
-          <img src="./assets/screenshot-workbench-20261003.png" alt="DeveAgent Studio packaged workbench, isolated test profile" width="1440" height="900" />
-          <figcaption data-i18n="hero.imageNote">Recorded product screenshot, not a design mockup. Current builds may differ.</figcaption>
-        </figure>
       </div>
     </header>
 
+    <section class="product-preview" aria-label="DeveAgent Studio">
+      <div class="wrap">
+        <figure>
+          <img src="./assets/screenshot-workbench-20261003.png" alt="DeveAgent Studio" width="1440" height="900" />
+        </figure>
+      </div>
+    </section>
+
     <section id="why">
       <div class="wrap">
-        <h2 data-i18n="why.title">Why it exists</h2>
+        <h2 data-i18n="why.title">From an idea to something you can deliver.</h2>
         <p class="lead" data-i18n="why.lead">
-          The hard part is not the first answer — it is hour six. A run that cannot tell you what it
-          changed, what it spent, why it stopped, or whether it actually finished is a run you cannot
-          trust with real work.
+          Write code, move projects forward and handle repeatable work.
+          Keep tasks, tools and agent collaboration together.
         </p>
         <div class="cards">
           <div class="card">
-            <h3 data-i18n="why.bounded.title">Bounded</h3>
+            <h3 data-i18n="why.bounded.title">Keep work moving</h3>
             <p data-i18n="why.bounded.body">
-              Goals carry acceptance criteria, budgets and deadlines. Loops have run limits and a lease so
-              two workers never run the same pass. A goal whose usage meter cannot be read stops instead of
-              spending blind.
+              Organize objectives with Goal and repeat tasks with Loop,
+              with run limits, budgets and schedules.
             </p>
           </div>
           <div class="card">
-            <h3 data-i18n="why.observable.title">Observable</h3>
+            <h3 data-i18n="why.observable.title">Progress at a glance</h3>
             <p data-i18n="why.observable.body">
-              Every Goal, Loop, Team and MoA run lands in one ledger with its status, child sessions, real
-              token totals and stop reason. Cache hit rate, cost and rounds come from provider usage
-              records — never invented.
+              Keep task status, context, cache, tokens and cost alongside your work.
             </p>
           </div>
           <div class="card">
-            <h3 data-i18n="why.recoverable.title">Recoverable</h3>
+            <h3 data-i18n="why.recoverable.title">Keep the context</h3>
             <p data-i18n="why.recoverable.body">
-              Each turn records a pre-turn checkpoint. Restoring one brings back both the file bytes and
-              the conversation position, and the rewind stays reversible until you send your next message.
+              Session history, checkpoints and project memory help you pick up where you left off.
             </p>
           </div>
         </div>
@@ -280,7 +278,7 @@
     <section id="architecture">
       <div class="wrap">
         <h2 data-i18n="architecture.title">Architecture</h2>
-        <p class="lead" data-i18n="architecture.lead">One session engine, not a second simulated agent behind the UI.</p>
+        <p class="lead" data-i18n="architecture.lead">The workspace, session engine and task capabilities work together.</p>
         <div class="architecture" data-component="architecture-diagram">
           <div><h3>DeveAgent Shell</h3><p data-i18n="architecture.shell">Projects, Composer, task board, tools, live context/cache/cost.</p></div>
           <div><h3>OpenCode Core</h3><p data-i18n="architecture.core">Sessions and event streams, providers, permissions, files, Git, terminal.</p></div>
@@ -291,16 +289,15 @@
 
     <section id="shots">
       <div class="wrap">
-        <h2 data-i18n="shots.title">Screenshots</h2>
-        <p class="lead" data-i18n="shots.lead">Captured from packaged builds by the project's own acceptance probes.</p>
+        <h2 data-i18n="shots.title">A workspace for your workflow</h2>
+        <p class="lead" data-i18n="shots.lead">Conversation, code and tools, each in the right place.</p>
         <div class="shots">
           <figure>
             <img src="./assets/screenshot-session.png" alt="Session workbench" />
             <figcaption>
               <strong data-i18n="shots.session.title">Session workbench.</strong>
               <span data-i18n="shots.session.body">
-                Conversation, live metrics and the agent's plan in one frame. A sub-agent strip inside the
-                composer shows what is running right now.
+                Keep your conversation, task plan and usage in view.
               </span>
             </figcaption>
           </figure>
@@ -309,28 +306,7 @@
             <figcaption>
               <strong data-i18n="shots.composer.title">Composer.</strong>
               <span data-i18n="shots.composer.body">
-                Mode, model, thinking level, permissions, skills and experts in one frame — reachable by
-                mouse and keyboard, light and dark, down to 860 px.
-              </span>
-            </figcaption>
-          </figure>
-          <figure>
-            <img src="./assets/screenshot-plan.png" alt="Plan mode" />
-            <figcaption>
-              <strong data-i18n="shots.plan.title">Plan mode.</strong>
-              <span data-i18n="shots.plan.body">
-                Planning output is visually distinct from execution output, and the badge follows the mode
-                the turn actually ran in.
-              </span>
-            </figcaption>
-          </figure>
-          <figure>
-            <img src="./assets/screenshot-sidebar.png" alt="Projects" />
-            <figcaption>
-              <strong data-i18n="shots.projects.title">Projects.</strong>
-              <span data-i18n="shots.projects.body">
-                Projects, sessions, work packs and capabilities in one scrolling column. Archiving and
-                removing never touch your files.
+                Choose a model, thinking level, mode, skills and permissions in one input area.
               </span>
             </figcaption>
           </figure>
@@ -341,14 +317,14 @@
     <section id="features">
       <div class="wrap">
         <h2 data-i18n="features.title">What it does</h2>
-        <p class="lead" data-i18n="features.lead">Autonomy you can inspect, not a firehose you have to babysit.</p>
+        <p class="lead" data-i18n="features.lead">Plan a task, coordinate agents or automate a repeatable workflow.</p>
         <table>
           <tbody>
             <tr>
               <td><strong data-i18n="features.goal">Goal</strong></td>
               <td data-i18n="features.goal.body">
-                Goal stores criteria, budgets, deadlines and continuation state. Completion evidence and
-                an optional verifier model do not replace workload-specific acceptance tests.
+                Goal stores criteria, budgets, deadlines and continuation state,
+                with completion records and an optional verifier model.
               </td>
             </tr>
             <tr>
@@ -375,8 +351,7 @@
             <tr>
               <td><strong data-i18n="features.self">Self-improvement</strong></td>
               <td data-i18n="features.self.body">
-                The agent can propose a reusable skill with provenance. Candidates remain STAGED until
-                reviewed and adopted; generating a file is not automatic skill evolution.
+                Save reusable steps as skill candidates for review and adoption.
               </td>
             </tr>
             <tr>
@@ -393,29 +368,28 @@
 
     <section>
       <div class="wrap">
-        <h2 data-i18n="honest.title">Honest by construction</h2>
-        <p class="lead" data-i18n="honest.lead">Three rules the code enforces, not just the marketing copy.</p>
+        <h2 data-i18n="honest.title">Your models. Your way of working.</h2>
+        <p class="lead" data-i18n="honest.lead">Choose your models, manage permissions and stay in control of your workspace.</p>
         <div class="cards">
           <div class="card">
-            <h3 data-i18n="honest.paid.title">No silent paid fallback</h3>
+            <h3 data-i18n="honest.paid.title">Choose your model</h3>
             <p data-i18n="honest.paid.body">
-              A provider fallback may only switch to a model whose cost is known to be zero. Paid candidates
-              are skipped by default, and when a switch happens you get an in-app announcement — not just a
-              log line.
+              Connect your providers and customize models for different roles.
+              Model switches are announced in the workspace.
             </p>
           </div>
           <div class="card">
-            <h3 data-i18n="honest.numbers.title">No invented numbers</h3>
+            <h3 data-i18n="honest.numbers.title">Usage in view</h3>
             <p data-i18n="honest.numbers.body">
-              When the provider returns no usage, the UI says "not returned" instead of showing 0. Unknown
-              usage stays unknown in the ledger too.
+              Context, cache, token and cost displays use provider usage records,
+              with separate labels for model estimates and billed costs.
             </p>
           </div>
           <div class="card">
-            <h3 data-i18n="honest.progress.title">No fake progress</h3>
+            <h3 data-i18n="honest.progress.title">Task progress, clearly</h3>
             <p data-i18n="honest.progress.body">
-              A failed child turn fails the task. A swallowed error that once let a run report success while
-              its model returned 500s was traced to the wait seam and fixed with a regression probe.
+              Task records include child sessions, results and stop reasons.
+              Failed turns are surfaced to the parent task.
             </p>
           </div>
         </div>
