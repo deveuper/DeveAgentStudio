@@ -67,7 +67,6 @@ import { useTheme, type ColorScheme } from "@opencode-ai/ui/theme/context"
 import { useCommand, type CommandOption } from "@/context/command"
 import { ConstrainDragXAxis, getDraggableId } from "@/utils/solid-dnd"
 import { DebugBar } from "@/components/debug-bar"
-import { HelpButton } from "@/components/help-button"
 import { Titlebar, type TitlebarUpdate } from "@/components/titlebar"
 import { useDirectoryPicker } from "@/components/directory-picker"
 import { ServerConnection, useServer } from "@/context/server"
@@ -1694,7 +1693,11 @@ export default function Layout(props: ParentProps) {
           "max-w-full overflow-hidden": panelProps.mobile,
         }}
         style={{
-          width: panelProps.mobile ? undefined : `${panel()}px`,
+          // The persisted draggable width is for the free-standing panel. When
+          // merged inside the DeveAgent sidebar the panel must fill the column
+          // instead: the inline 280px width overflowed the 277px nav by 21px
+          // and was the root cause of the sidebar's horizontal overflow.
+          width: panelProps.mobile || merged() ? undefined : `${panel()}px`,
         }}
       >
         <Show
@@ -2020,13 +2023,13 @@ export default function Layout(props: ParentProps) {
         </Show>
 
         <div
-          class="shrink-0 px-3 py-3"
+          class="min-w-0 overflow-hidden px-3 py-3"
           classList={{
             hidden: store.gettingStartedDismissed || !(providers.all().size > 0 && providers.paid().length === 0),
           }}
         >
-          <div class="rounded-xl bg-background-base shadow-xs-border-base" data-component="getting-started">
-            <div class="p-3 flex flex-col gap-6">
+          <div class="min-w-0 rounded-xl bg-background-base shadow-xs-border-base" data-component="getting-started">
+            <div class="min-w-0 p-3 flex flex-col gap-4">
               <div class="flex flex-col gap-2">
                 <div class="text-14-medium text-text-strong">{language.t("sidebar.gettingStarted.title")}</div>
                 <div class="text-14-regular text-text-base" style={{ "line-height": "var(--line-height-normal)" }}>
@@ -2036,7 +2039,10 @@ export default function Layout(props: ParentProps) {
                   {language.t("sidebar.gettingStarted.line2")}
                 </div>
               </div>
-              <div data-component="getting-started-actions">
+              {/* Stack the two actions: side-by-side "large" buttons forced a
+                  ~280px min-content width inside the 277px sidebar and were the
+                  root cause of the nav's horizontal overflow. */}
+              <div data-component="getting-started-actions" class="flex flex-col gap-2">
                 <Button size="large" icon="plus-small" onClick={connectProvider}>
                   {language.t("command.provider.connect")}
                 </Button>
@@ -2455,7 +2461,6 @@ export default function Layout(props: ParentProps) {
             </main>
           </div>
           {import.meta.env.DEV && import.meta.env.VITE_DISABLE_DEBUG_BAR !== "1" && <DebugBar />}
-          <HelpButton />
           <ToastRegion v2={newDesign()} />
         </div>
       }
@@ -2609,7 +2614,6 @@ export default function Layout(props: ParentProps) {
           </div>
           {import.meta.env.DEV && import.meta.env.VITE_DISABLE_DEBUG_BAR !== "1" && <DebugBar />}
         </div>
-        <HelpButton />
         <ToastRegion v2={newDesign()} />
       </div>
     </Show>

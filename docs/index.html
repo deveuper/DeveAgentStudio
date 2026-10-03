@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DeveAgent Studio — an autonomous agent workstation</title>
+    <title>DeveAgent Studio</title>
     <meta
       name="description"
-      content="A desktop AI coding agent with bounded autonomy: goals that verify themselves, teams that debate, reversible rewind, and metrics that never invent a number."
+      content="An OpenCode-based agent workstation with configurable tools, bounded tasks, and observable usage."
     />
     <meta property="og:title" content="DeveAgent Studio" />
     <meta property="og:description" content="An autonomous agent workstation for coding, planning and long-running tasks." />
@@ -24,9 +24,9 @@
         --text: #1c222b;
         --text-muted: #545d69;
         --text-faint: #828b98;
-        --accent: #c2410c;
-        --accent-hover: #9a3412;
-        --accent-soft: #fff4ee;
+        --accent: #2563eb;
+        --accent-hover: #1d4ed8;
+        --accent-soft: #eff6ff;
         --success: #15803d;
         --warning: #b45309;
         --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 8px 24px -12px rgba(16, 24, 40, 0.12);
@@ -46,9 +46,9 @@
           --text: #e8ebf1;
           --text-muted: #a2aab7;
           --text-faint: #6e7787;
-          --accent: #fb923c;
-          --accent-hover: #fdba74;
-          --accent-soft: #2b1a11;
+          --accent: #93c5fd;
+          --accent-hover: #bfdbfe;
+          --accent-soft: #172339;
           --success: #4ade80;
           --warning: #fbbf24;
           --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -16px rgba(0, 0, 0, 0.6);
@@ -92,36 +92,39 @@
       }
       .lang:hover { border-color: var(--border-strong); color: var(--text); }
 
-      .hero { padding: 76px 0 60px; background: linear-gradient(180deg, var(--bg-soft), var(--bg)); border-bottom: 1px solid var(--border); }
+      .hero { padding: 30px 0 24px; border-bottom: 1px solid var(--border); }
       .hero .eyebrow {
         display: inline-flex; align-items: center; gap: 8px;
         font-size: 13px; font-weight: 550; color: var(--accent);
-        background: var(--accent-soft); border-radius: 999px; padding: 5px 13px; margin-bottom: 22px;
+        margin-bottom: 8px;
       }
-      .hero h1 { margin: 0 0 18px; font-size: 46px; line-height: 1.1; letter-spacing: -0.025em; font-weight: 660; }
-      .hero .sub { font-size: 19px; line-height: 1.6; color: var(--text-muted); max-width: 700px; margin: 0 0 32px; }
+      .hero h1 { margin: 0 0 10px; font-size: 36px; line-height: 1.2; letter-spacing: 0; font-weight: 660; }
+      .hero .sub { font-size: 16px; line-height: 1.6; color: var(--text-muted); max-width: 880px; margin: 0 0 18px; }
+      .hero figure { margin-top: 22px; }
+      .hero figure img { height: auto; max-height: 340px; object-fit: contain; border: 0; border-radius: 0; box-shadow: none; }
+      .guide-links { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; font-size: 14px; }
       .cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
       .btn {
         display: inline-flex; align-items: center; gap: 9px; padding: 13px 22px;
-        border-radius: 10px; font-weight: 570; font-size: 15.5px;
+        border-radius: 6px; font-weight: 570; font-size: 15.5px;
         border: 1px solid var(--border-strong); background: var(--bg-card); color: var(--text);
         transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
       }
       .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
-      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-      .btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+      .btn.primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+      .btn.primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
       .btn small { font-weight: 450; opacity: .8; font-size: 13px; }
-      .facts { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 30px; color: var(--text-faint); font-size: 13.5px; }
+      .facts { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 18px; color: var(--text-muted); font-size: 13.5px; }
       .facts span { display: inline-flex; align-items: center; gap: 7px; }
       .facts i { width: 5px; height: 5px; border-radius: 50%; background: var(--border-strong); }
 
-      section { padding: 68px 0; border-bottom: 1px solid var(--border); }
-      section h2 { margin: 0 0 10px; font-size: 28px; letter-spacing: -0.015em; font-weight: 640; }
+      section { padding: 40px 0; border-bottom: 1px solid var(--border); }
+      section h2 { margin: 0 0 10px; font-size: 26px; letter-spacing: 0; font-weight: 640; }
       section .lead { color: var(--text-muted); margin: 0 0 36px; max-width: 760px; font-size: 16.5px; }
 
       .cards { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
       .card {
-        background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+        background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
         padding: 22px 24px; box-shadow: var(--shadow);
       }
       .card h3 { margin: 0 0 9px; font-size: 17px; font-weight: 600; }
@@ -132,7 +135,7 @@
       .shots { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); }
       figure { margin: 0; }
       figure img {
-        width: 100%; display: block; border-radius: 12px;
+        width: 100%; display: block; border-radius: 6px;
         border: 1px solid var(--border); background: var(--bg-inset); box-shadow: var(--shadow);
       }
       figcaption { margin-top: 12px; color: var(--text-muted); font-size: 14.5px; }
@@ -157,7 +160,7 @@
       }
       .download-card {
         display: flex; flex-wrap: wrap; align-items: center; gap: 20px;
-        background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+        background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
         padding: 26px 28px; box-shadow: var(--shadow);
       }
       .download-card .info { flex: 1; min-width: 240px; }
@@ -169,11 +172,22 @@
       footer .cols { display: flex; flex-wrap: wrap; gap: 14px 30px; }
       footer a { color: var(--text-muted); }
       footer a:hover { color: var(--text); }
+      .architecture { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; padding: 22px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+      .architecture h3 { margin: 0 0 8px; font-size: 17px; }
+      .architecture p { margin: 0; font-size: 14px; color: var(--text-muted); }
+      td { overflow-wrap: anywhere; }
+      @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn { transition: none; } }
 
       @media (max-width: 720px) {
         .hero h1 { font-size: 34px; }
         .topbar nav { display: none; }
         .shots { grid-template-columns: 1fr; }
+        .architecture { grid-template-columns: 1fr; }
+        .topbar .wrap { gap: 8px; padding: 0 12px; }
+        .brand { font-size: 14px; }
+        .lang { max-width: 120px; }
+        .cards, .two { grid-template-columns: minmax(0, 1fr); }
+        .wrap { padding: 0 18px; }
       }
     </style>
   </head>
@@ -196,24 +210,34 @@
     <header class="hero" id="top">
       <div class="wrap">
         <span class="eyebrow" data-i18n="hero.eyebrow">Bounded autonomy for long tasks</span>
-        <h1 data-i18n="hero.title">An agent workstation that shows its work.</h1>
+        <h1>DeveAgent Studio</h1>
         <p class="sub" data-i18n="hero.sub">
           Most AI coding tools are either a terminal with a chat box, or a pretty window that hides what
           the model is doing. Neither survives hour six. DeveAgent Studio keeps the proven OpenCode engine
           and adds an agent layer that is bounded, observable and recoverable.
         </p>
         <div class="cta">
-          <a class="btn primary" id="download" href="https://github.com/deveuper/DeveAgentStudio/releases/latest/download/DeveAgent-Studio-win-x64.exe" download>
-            <span data-i18n="hero.download">Download for Windows</span> <small data-i18n="hero.downloadMeta">180 MB · v0.2.0</small>
+          <a class="btn primary" id="download" href="https://github.com/deveuper/DeveAgentStudio/releases/latest">
+            <span data-i18n="hero.download">Download for Windows</span> <small data-i18n="hero.downloadMeta">Release assets</small>
           </a>
           <a class="btn" href="https://github.com/deveuper/DeveAgentStudio" data-i18n="hero.github">View source</a>
         </div>
+        <div class="guide-links">
+          <a href="https://github.com/deveuper/DeveAgentStudio/blob/main/docs/readme/README.zh-CN.md">简体中文介绍</a>
+          <a href="https://github.com/deveuper/DeveAgentStudio/blob/main/README.md">English</a>
+          <a href="https://github.com/deveuper/DeveAgentStudio/blob/main/docs/readme/README.fr.md">Français</a>
+          <a href="https://github.com/deveuper/DeveAgentStudio/blob/main/docs/readme/README.md" data-i18n="guide.languages">Language guide</a>
+        </div>
         <div class="facts">
           <span><i></i><span data-i18n="facts.platforms">Windows · macOS · Linux</span></span>
-          <span><i></i><span data-i18n="facts.langs">29 UI languages</span></span>
+          <span><i></i><span data-i18n="facts.langs">20 UI languages</span></span>
           <span><i></i><span data-i18n="facts.license">MIT licensed</span></span>
           <span><i></i><span data-i18n="facts.byok">Bring your own key</span></span>
         </div>
+        <figure>
+          <img src="./assets/screenshot-workbench-20261003.png" alt="DeveAgent Studio packaged workbench, isolated test profile" width="1440" height="900" />
+          <figcaption data-i18n="hero.imageNote">Recorded product screenshot, not a design mockup. Current builds may differ.</figcaption>
+        </figure>
       </div>
     </header>
 
@@ -227,7 +251,6 @@
         </p>
         <div class="cards">
           <div class="card">
-            <span class="k">🎯</span>
             <h3 data-i18n="why.bounded.title">Bounded</h3>
             <p data-i18n="why.bounded.body">
               Goals carry acceptance criteria, budgets and deadlines. Loops have run limits and a lease so
@@ -236,7 +259,6 @@
             </p>
           </div>
           <div class="card">
-            <span class="k">📊</span>
             <h3 data-i18n="why.observable.title">Observable</h3>
             <p data-i18n="why.observable.body">
               Every Goal, Loop, Team and MoA run lands in one ledger with its status, child sessions, real
@@ -245,13 +267,24 @@
             </p>
           </div>
           <div class="card">
-            <span class="k">↩︎</span>
             <h3 data-i18n="why.recoverable.title">Recoverable</h3>
             <p data-i18n="why.recoverable.body">
               Each turn records a pre-turn checkpoint. Restoring one brings back both the file bytes and
               the conversation position, and the rewind stays reversible until you send your next message.
             </p>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="wrap">
+        <h2 data-i18n="architecture.title">Architecture</h2>
+        <p class="lead" data-i18n="architecture.lead">One session engine, not a second simulated agent behind the UI.</p>
+        <div class="architecture" data-component="architecture-diagram">
+          <div><h3>DeveAgent Shell</h3><p data-i18n="architecture.shell">Projects, Composer, task board, tools, live context/cache/cost.</p></div>
+          <div><h3>OpenCode Core</h3><p data-i18n="architecture.core">Sessions and event streams, providers, permissions, files, Git, terminal.</p></div>
+          <div><h3>DeveAgent Runtime</h3><p data-i18n="architecture.runtime">Bounded Goal/Loop/Team, skill provenance, memory, Computer Use adapters.</p></div>
         </div>
       </div>
     </section>
@@ -314,9 +347,8 @@
             <tr>
               <td><strong data-i18n="features.goal">Goal</strong></td>
               <td data-i18n="features.goal.body">
-                Turns a request into acceptance criteria. When the agent claims completion, an independent
-                verifier model re-checks every criterion against the transcript — the agent that did the
-                work is not the only judge of it.
+                Goal stores criteria, budgets, deadlines and continuation state. Completion evidence and
+                an optional verifier model do not replace workload-specific acceptance tests.
               </td>
             </tr>
             <tr>
@@ -343,9 +375,8 @@
             <tr>
               <td><strong data-i18n="features.self">Self-improvement</strong></td>
               <td data-i18n="features.self.body">
-                The agent can persist a reusable procedure as a skill. A provenance ledger records who wrote
-                each one — the agent may only update its own; user-authored and pinned skills are refused,
-                never silently overwritten.
+                The agent can propose a reusable skill with provenance. Candidates remain STAGED until
+                reviewed and adopted; generating a file is not automatic skill evolution.
               </td>
             </tr>
             <tr>
@@ -398,18 +429,18 @@
         <div class="download-card">
           <div class="info">
             <h3 data-i18n="install.win">Windows 10 / 11 · x64</h3>
-            <p data-i18n="install.win.body">DeveAgent-Studio-win-x64.exe · 180 MB · installer</p>
+            <p data-i18n="install.win.body">Installer and portable assets: see the release for version, size and checksums.</p>
           </div>
-          <a class="btn primary" href="https://github.com/deveuper/DeveAgentStudio/releases/latest/download/DeveAgent-Studio-win-x64.exe" download data-i18n="install.button">Download</a>
+          <a class="btn primary" href="https://github.com/deveuper/DeveAgentStudio/releases/latest" data-i18n="install.button">Download</a>
         </div>
         <div class="platforms">
           <div class="card">
             <h3 data-i18n="install.mac">macOS</h3>
-            <p data-i18n="install.mac.body">Build from source today; signed builds are on the roadmap.</p>
+            <p data-i18n="install.mac.body">Build from source using the macOS packaging command.</p>
           </div>
           <div class="card">
             <h3 data-i18n="install.linux">Linux</h3>
-            <p data-i18n="install.linux.body">AppImage and deb builds are produced by the packaging script.</p>
+            <p data-i18n="install.linux.body">Build from source using the Linux packaging command.</p>
           </div>
         </div>
         <div class="two" style="margin-top: 34px;">
@@ -433,22 +464,22 @@
 
     <section id="status">
       <div class="wrap">
-        <h2 data-i18n="status.title">Status and boundaries</h2>
+        <h2 data-i18n="status.title">Latest updates</h2>
         <div class="two">
           <div>
-            <h3 data-i18n="status.verified">Verified today</h3>
+            <h3 data-i18n="status.verified">Workbench and runtime</h3>
             <ul class="checks">
-              <li data-i18n="status.v1">535 app unit tests, 274 agent-runtime tests, 6 locale-parity gates — green</li>
-              <li data-i18n="status.v2">Acceptance probes run against packaged builds: real-model smoke, plan mode, loop, background tasks, MoA debate, team retry, rewind, MCP connect and failure states, composer geometry, status-bar geometry, startup timing, cache A/B</li>
-              <li data-i18n="status.v3">Cache A/B measured: a mode switch leaves 100% of the prompt prefix bytes unchanged</li>
+              <li data-i18n="status.v1">2026-10-03: refreshed product screenshots, architecture and English, Simplified Chinese and French guides.</li>
+              <li data-i18n="status.v2">Provider fallback history persists across page reloads.</li>
+              <li data-i18n="status.v3">Improved text contrast, model availability labels and sidebar sizing.</li>
             </ul>
           </div>
           <div>
-            <h3 data-i18n="status.unverified">Not verified — do not claim</h3>
-            <ul class="checks dash">
-              <li data-i18n="status.u1">No multi-hour real-workload soak test has been run; recovery paths are covered by fixtures and free models</li>
-              <li data-i18n="status.u2">Model quality is whatever provider you connect — this project does not make a model smarter</li>
-              <li data-i18n="status.u3">Computer Use covers window inventory, focus, UI element trees and input on Windows; desktop OCR and cross-application workflows are not claimed</li>
+            <h3 data-i18n="status.unverified">Skill Store</h3>
+            <ul class="checks">
+              <li data-i18n="status.u1">Repeated Markdown Skill updates succeed without rewriting unchanged content.</li>
+              <li data-i18n="status.u2">Network errors are distinguished from available updates.</li>
+              <li data-i18n="status.u3">Optional checks run on opening the installed page; you choose when to install.</li>
             </ul>
           </div>
         </div>

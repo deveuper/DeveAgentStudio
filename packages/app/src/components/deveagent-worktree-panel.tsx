@@ -9,7 +9,8 @@ import { showToast } from "@/utils/toast"
 // open a session straight into a worktree via the existing deep-link flow.
 
 export function DeveagentWorktreePanel() {
-  const language = useLanguage()  const serverSDK = useServerSDK()
+  const language = useLanguage()
+  const serverSDK = useServerSDK()
   const sdk = useSDK()
   const base = () => serverSDK().url.replace(/\/+$/, "")
   const directory = () => sdk().directory || ""
@@ -263,7 +264,7 @@ export function DeveagentWorktreePanel() {
               </div>
               <div class="mt-1 flex items-center gap-2">
                 <Show when={worktree.branch}>
-                  <span class="shrink-0 rounded bg-v2-background-bg-accent/10 px-1.5 py-0.5 text-11-medium text-v2-text-text-accent">{worktree.branch}</span>
+                  <span class="shrink-0 rounded [background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse px-1.5 py-0.5 text-11-medium">{worktree.branch}</span>
                 </Show>
                 <span class="min-w-0 truncate text-11-regular text-text-faint" title={worktree.path}>
                   {worktree.path}

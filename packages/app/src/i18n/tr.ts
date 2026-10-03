@@ -3,6 +3,7 @@ import { dict as en } from "./en"
 type Keys = keyof typeof en
 
 export const dict = {
+  "deveagent.skillstore.autoCheckOnOpen": "Mağaza açıldığında kontrol et",
   "command.category.suggested": "Önerilen",
   "command.category.view": "Görünüm",
   "command.category.project": "Proje",
@@ -202,6 +203,8 @@ export const dict = {
   "provider.disconnect.toast.disconnected.description": "{{provider}} modelleri artık kullanılabilir değil.",
 
   "model.tag.free": "Ücretsiz",
+
+  "model.wireId": "Şu adla gönderilir",
   "model.tag.latest": "En yeni",
   "model.provider.anthropic": "Anthropic",
   "model.provider.openai": "OpenAI",
@@ -893,6 +896,7 @@ export const dict = {
   "deveagent.statusbar.autoApprove": "Otomatik onay",
   "deveagent.statusbar.fullAccess": "Tam erişim",
   "deveagent.statusbar.goalDone": "Hedef tamamlandı",
+  "deveagent.statusbar.goalVerifyRejected": "Hedef iddiası reddedildi",
   "deveagent.statusbar.usage": "Kullanım",
   "deveagent.statusbar.ready": "Hazır",
   "deveagent.statusbar.context": "Bağlam",
@@ -1396,6 +1400,7 @@ export const dict = {
   "deveagent.voice.startVoiceInput": "Sesli girişi başlat",
   "deveagent.composer.roleBoundModelTitle": "Fiilen kullanılan: {{model}} ({{role}} rolüne bağlı)",
   "deveagent.composer.roleRoutingTitle": "Rol yönlendirme: {{role}} (role bağlı Model yok; geçerli Model kullanılıyor)",
+  "deveagent.composer.modelUnavailable": "Bu kanalda kullanılamaz",
   "deveagent.composer.roleRoutingHint": "Rol yönlendirme: {{role}} (mesajlar rolün Modeline yönlendirilir; bağlı olmayan roller varsayılan kuralı izler. Temizlemek ve elle seçime dönmek için tıklayın)",
   "deveagent.composer.unloadSkill": "{{name}} öğesini kaldır",
   "deveagent.composer.switchHint": "Oturum sırasında mod veya model değiştirmek bağlamı korur; rol yönlendirmesi rol modelini kullanır",
@@ -1745,10 +1750,8 @@ export const dict = {
   "deveagent.dashboard.usageInput": "Girdi",
   "deveagent.dashboard.usageOutput": "Çıktı",
   "deveagent.dashboard.sessionMetrics": "Oturum ölçümleri",
-  "deveagent.dashboard.sessionCost": "Oturum maliyeti",
   "deveagent.dashboard.elapsed": "Geçen süre",
   "deveagent.dashboard.requests": "İstekler",
-  "deveagent.dashboard.totalTokens": "Toplam Token",
   "deveagent.dashboard.memoryRss": "Bellek RSS",
   "deveagent.dashboard.usageAndCache": "Kullanım ve önbellek",
   "deveagent.dashboard.awaitingModelUsage": "Model kullanımı bekleniyor",
@@ -1787,6 +1790,8 @@ export const dict = {
   "deveagent.dashboard.subsessions": "alt oturumlar",
   "deveagent.dashboard.legacyLedgerFallback": "eski deftere geri dönüş",
   "deveagent.dashboard.metricsSource": "Ölçüm kaynağı",
+  "deveagent.fallbacks.title": "Model yedeklemeleri",
+  "deveagent.fallbacks.paid": "Ücretli",
   "deveagent.dashboard.sessionData": "Oturum verileri",
   "deveagent.dashboard.globalDefault": "Genel varsayılan",
   "deveagent.dashboard.noFallbackChain": "Fallback chain yapılandırılmadı",

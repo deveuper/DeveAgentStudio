@@ -34,6 +34,17 @@ The desktop application currently includes these UI locales:
 - ไทย
 - Bosanski
 - Türkçe
+- Italiano
+- Nederlands
+- Svenska
+- Suomi
+- Čeština
+- Magyar
+- Română
+- Ελληνικά
+- Tiếng Việt
+- Bahasa Indonesia
+- हिन्दी
 
 The UI locale list describes application translations. It does not mean that every language has a separate full project guide.
 
@@ -41,8 +52,8 @@ The UI locale list describes application translations. It does not mean that eve
 
 ## 中文说明
 
-完整项目介绍目前维护 **英文、简体中文、法文** 三个版本。桌面应用本身支持上方列出的 18 种界面语言，可在应用设置中切换。界面语言支持不等于每种语言都有一份完整 README。
+完整项目介绍目前维护 **英文、简体中文、法文** 三个版本。桌面应用本身支持上方列出的 29 种界面语言，可在应用设置中切换。界面语言支持不等于每种语言都有一份完整 README。
 
 ## Note française
 
-La documentation complète est maintenue en **anglais, chinois simplifié et français**. L'application de bureau propose également les 18 langues d'interface répertoriées ci-dessus.
+La documentation complète est maintenue en **anglais, chinois simplifié et français**. L'application de bureau propose également les 29 langues d'interface répertoriées ci-dessus.

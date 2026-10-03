@@ -13,6 +13,7 @@ import { createLowPowerInterval } from "@/context/low-power"
 import { DeveagentTrustCard } from "@/components/deveagent-trust-card"
 import { DeveagentCuAuditCard } from "@/components/deveagent-cu-audit-card"
 import { DeveagentRunsCard } from "@/components/deveagent-runs-card"
+import { DeveagentFallbackCard } from "@/components/deveagent-fallback-card"
 import { DeveagentRewindPicker } from "@/components/deveagent-rewind-picker"
 
 import { DeveagentAgentBoard } from "@/components/deveagent-agent-board"
@@ -57,6 +58,10 @@ const SECTION_TITLE = "text-[11px] font-[520] uppercase tracking-wide text-v2-te
 // Metric values are tabular so digits do not jitter while numbers tick.
 const VALUE_HERO = "text-[22px] font-semibold leading-none tabular-nums"
 const VALUE_STAT = "text-[16px] font-semibold tabular-nums"
+// A waiting state must not look like a broken data card: the solid card chrome
+// around "waiting for the model" read as a disabled input. A dashed border and
+// a centred line say "nothing to show yet" instead.
+const CARD_WAITING = "rounded-lg border border-dashed border-v2-border-border-base bg-transparent px-3 py-4 flex flex-col items-center justify-center gap-1 text-center"
 
 function compactTokens(value: number) {
   // Reference-style compact numbers: 50.4K / 128K / 1.5M (one decimal,
@@ -869,15 +874,16 @@ export function DeveagentDashboard() {
              <Show
                when={sessionMetrics.hasUsage()}
                fallback={
-                 // Empty state as an intentional line: same card rhythm, title
-                 // plus one quiet sentence — not a half-height broken box.
-                 <div class={`flex flex-col gap-1.5 ${CARD_CORE}`}>
+                 // Empty state as an intentional waiting marker, not a data
+                 // card: dashed border, centred, one quiet sentence. The old
+                 // solid-card treatment read as a disabled input.
+                 <div data-component="deveagent-core-metric" data-metric="usage" class={CARD_WAITING}>
                    <div class={SECTION_TITLE}>{language.t("deveagent.dashboard.usageAndCache")}</div>
                    <div class="text-[12px] text-v2-text-text-faint">{language.t("deveagent.dashboard.awaitingModelUsage")}</div>
                  </div>
                }
              >
-             <div class={`flex flex-col gap-2.5 ${CARD_CORE}`}>
+             <div data-component="deveagent-core-metric" data-metric="usage" class={`flex flex-col gap-2.5 ${CARD_CORE}`}>
                <div class={SECTION_TITLE}>{language.t("deveagent.dashboard.usageBreakdown")}</div>
                <Show
                  when={sessionMetrics.hasUsage() && (sessionMetrics.sessionTotalTokens() > 0 || sessionMetrics.teamUsage().tokens > 0)}
@@ -916,7 +922,7 @@ export function DeveagentDashboard() {
                </Show>
              </div>
 
-             <div class={CARD_CORE}>
+             <div data-component="deveagent-core-metric" data-metric="cache" class={CARD_CORE}>
                <div class={`${SECTION_TITLE} mb-1.5`}>
                  {language.t("deveagent.dashboard.cacheHitRate")}
                </div>
@@ -1092,28 +1098,71 @@ export function DeveagentDashboard() {
 
        </Show>
 
+      {/* Cost estimate is the third core metric, so it sits with the other two
+          heroes instead of inside the stats grid further down: the rail is read
+          top-down and the three numbers the user watches must be the first
+          three things in it. */}
+      <div data-component="deveagent-core-metric" data-metric="cost" class={CARD_CORE}>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class={SECTION_TITLE}>{language.t("deveagent.dashboard.costEstimate")}</div>
+          <Select<CostCurrencyOption>
+            size="normal"
+            options={[...costCurrencyOptions]}
+            current={displayCurrency() as CostCurrencyOption}
+            label={(value) => costCurrencyLabel(value, language.t("deveagent.dashboard.costNative"))}
+            onSelect={(value) => {
+              if (value) updateDisplayCurrency(value)
+            }}
+            class="min-w-[94px] border border-v2-border-border-base bg-v2-background-bg-layer-01 text-[11px] text-v2-text-text-base"
+            valueClass="truncate text-[11px] text-v2-text-text-base"
+            triggerProps={{ "aria-label": language.t("deveagent.dashboard.costDisplayCurrency"), value: displayCurrency() }}
+          />
+        </div>
+        {/* "No cost returned" is painted faint instead of the warning colour
+            (a warning that is always on is not a warning). */}
+        <div
+          data-component="deveagent-cost-hero"
+          class="mt-1 text-[22px] font-semibold leading-tight tabular-nums break-words"
+          classList={{ "text-v2-text-text-faint": !selectedCostView().hasCost }}
+          style={selectedCostView().hasCost ? { color: "var(--v2-state-fg-warning)" } : undefined}
+        >
+          {costLabel()}
+        </div>
+        <div class="mt-1 text-[10px] leading-4 text-v2-text-text-muted">{conversionLabel()}</div>
+      </div>
+
+      {/* Fallback history sits AFTER the three heroes: it is an audit trail,
+          not one of the three numbers the user watches first. */}
+      <DeveagentFallbackCard />
+
       <div class={`flex flex-col gap-2 ${CARD}`}>
         <div class={SECTION_TITLE}>{language.t("deveagent.dashboard.sessionMetrics")}</div>
         {/* R206-G7: uniform key-value rows instead of 17px tiles — same data,
-            roughly half the vertical space. */}
-        <div class="flex flex-col divide-y divide-v2-border-border-muted/60">
+            roughly half the vertical space.
+            Cache hit, session cost and total tokens are deliberately NOT rows
+            here: each is already a hero card above this list, and repeating
+            them made the rail read as two tables of the same numbers. */}
+        <div data-component="deveagent-metric-rows" class="flex flex-col divide-y divide-v2-border-border-muted/60">
           {(() => {
             const elapsed = sessionMetrics.taskTiming().elapsedMs
-            const rows: [string, string, string | undefined][] = [
-              [language.t("deveagent.statusbar.cacheHit"), sessionMetrics.hasUsage() ? `${percent(cacheHitRate())}%` : "--", !sessionMetrics.hasUsage() ? "var(--v2-text-text-faint)" : "var(--v2-state-fg-success)"],
-              [language.t("deveagent.dashboard.sessionCost"), costLabel(), undefined],
-              [language.t("deveagent.dashboard.elapsed"), sessionMetrics.hasTaskAggregate() && elapsed !== undefined ? formatElapsed(elapsed) : "--", undefined],
-              [language.t("deveagent.dashboard.requests"), String(sessionMetrics.rounds()), undefined],
-              [language.t("deveagent.dashboard.totalTokens"), number().format(sessionMetrics.sessionTotalTokens()), undefined],
+            // The metric id is part of the row so a probe can locate a specific
+            // row (e.g. elapsed) by attribute instead of by its translated label.
+            const rows: [string, string, string, string | undefined][] = [
+              ["elapsed", language.t("deveagent.dashboard.elapsed"), sessionMetrics.hasTaskAggregate() && elapsed !== undefined ? formatElapsed(elapsed) : "--", undefined],
+              ["requests", language.t("deveagent.dashboard.requests"), String(sessionMetrics.rounds()), undefined],
+              ["total-input", language.t("deveagent.dashboard.totalInput"), sessionMetrics.hasUsage() ? number().format(sessionMetrics.sessionInputTokens()) : language.t("deveagent.dashboard.notReturned"), undefined],
+              ["total-output", language.t("deveagent.dashboard.totalOutput"), sessionMetrics.hasUsage() ? number().format(sessionMetrics.sessionOutputTokens()) : language.t("deveagent.dashboard.notReturned"), undefined],
+              ["session-tokens", language.t("deveagent.dashboard.sessionTokens"), sessionMetrics.hasUsage() ? number().format(sessionMetrics.sessionTotalTokens()) : language.t("deveagent.dashboard.notReturned"), undefined],
             ]
-            if (serverMemory()) rows.push([language.t("deveagent.dashboard.memoryRss"), `${serverMemory()!.rssMB} MB`, undefined])
-            return rows.map(([label, value, color]) => (
+            if (serverMemory()) rows.push(["memory-rss", language.t("deveagent.dashboard.memoryRss"), `${serverMemory()!.rssMB} MB`, undefined])
+            return rows.map(([metric, label, value, color]) => (
               // Label quiet and small; value one tier larger and tabular, so the
               // column of numbers reads as the content of the card. A metric the
               // backend never reported stays faint instead of looking measured.
-              <div class="flex items-baseline justify-between gap-2 py-1.5">
-                <span class="text-[11px] text-v2-text-text-muted">{label}</span>
+              <div data-component="deveagent-metric-row" data-metric={metric} class="flex items-baseline justify-between gap-2 py-1.5">
+                <span data-component="deveagent-metric-row-label" class="text-[11px] text-v2-text-text-muted">{label}</span>
                 <span
+                  data-component="deveagent-metric-row-value"
                   class="text-[13px] font-medium tabular-nums"
                   classList={{ "text-v2-text-text-faint": !color && value === "--" }}
                   style={color ? { color } : undefined}
@@ -1127,41 +1176,17 @@ export function DeveagentDashboard() {
       </div>
 
 
-      <DeveAgentMarkItDownStatus events={markitdownEvents()} />
+      {/* A conversion diagnostic, not a core metric: rendering it as an
+          always-on waiting card put a permanent grey box between the metrics
+          the user watches. It only appears once an event exists. */}
+      <Show when={markitdownEvents().length > 0}>
+        <DeveAgentMarkItDownStatus events={markitdownEvents()} />
+      </Show>
 
+      {/* `轮次` is deliberately NOT a separate tile: the session-metrics rows
+          already carry the same `sessionMetrics.rounds()` value as 请求数, and
+          rendering both made the same number appear twice on one screen. */}
       <div class="grid grid-cols-2 gap-3">
-        <div class={`col-span-2 ${CARD_CORE}`}>
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class={SECTION_TITLE}>{language.t("deveagent.dashboard.costEstimate")}</div>
-            <Select<CostCurrencyOption>
-              size="normal"
-              options={[...costCurrencyOptions]}
-              current={displayCurrency() as CostCurrencyOption}
-              label={(value) => costCurrencyLabel(value, language.t("deveagent.dashboard.costNative"))}
-              onSelect={(value) => {
-                if (value) updateDisplayCurrency(value)
-              }}
-              class="min-w-[94px] border border-v2-border-border-base bg-v2-background-bg-layer-01 text-[11px] text-v2-text-text-base"
-              valueClass="truncate text-[11px] text-v2-text-text-base"
-              triggerProps={{ "aria-label": language.t("deveagent.dashboard.costDisplayCurrency"), value: displayCurrency() }}
-            />
-          </div>
-          {/* Cost is one of the three core metrics: same 22px hero as the cache
-              rate, and "no cost returned" is painted faint instead of the
-              warning colour (a warning that is always on is not a warning). */}
-          <div
-            class="mt-1 text-[22px] font-semibold leading-tight tabular-nums break-words"
-            classList={{ "text-v2-text-text-faint": !selectedCostView().hasCost }}
-            style={selectedCostView().hasCost ? { color: "var(--v2-state-fg-warning)" } : undefined}
-          >
-            {costLabel()}
-          </div>
-          <div class="mt-1 text-[10px] leading-4 text-v2-text-text-muted">{conversionLabel()}</div>
-        </div>
-        <div class={CARD}>
-          <div class={SECTION_TITLE}>{language.t("deveagent.statusbar.rounds")}</div>
-          <div class={`mt-1 ${VALUE_STAT}`}>{sessionMetrics.rounds()}</div>
-        </div>
         <Show when={sessionMetrics.hasTaskTiming()}>
           <div class={CARD}>
             <div class={SECTION_TITLE}>
@@ -1211,37 +1236,25 @@ export function DeveagentDashboard() {
             </div>
           </div>
         </Show>
-        <div class={CARD}>
-          <div class={SECTION_TITLE} title={language.t("deveagent.dashboard.includesSubagents")}>{language.t("deveagent.dashboard.totalInput")}</div>
-          <div class={`mt-1 ${VALUE_STAT}`} classList={{ "text-v2-text-text-faint": !sessionMetrics.hasUsage() }}>
-            {sessionMetrics.hasUsage() ? number().format(sessionMetrics.sessionInputTokens()) : language.t("deveagent.dashboard.notReturned")}
-          </div>
-        </div>
-        <div class={CARD}>
-          <div class={SECTION_TITLE} title={language.t("deveagent.dashboard.includesSubagents")}>{language.t("deveagent.dashboard.totalOutput")}</div>
-          <div class={`mt-1 ${VALUE_STAT}`} classList={{ "text-v2-text-text-faint": !sessionMetrics.hasUsage() }}>
-            {sessionMetrics.hasUsage() ? number().format(sessionMetrics.sessionOutputTokens()) : language.t("deveagent.dashboard.notReturned")}
-          </div>
-        </div>
-        <div class={CARD}>
-          <div class={SECTION_TITLE} title={language.t("deveagent.dashboard.includesSubagents")}>{language.t("deveagent.dashboard.sessionTokens")}</div>
-          <div class={`mt-1 ${VALUE_STAT}`} classList={{ "text-v2-text-text-faint": !sessionMetrics.hasUsage() }}>
-            {sessionMetrics.hasUsage() ? number().format(sessionMetrics.sessionTotalTokens()) : language.t("deveagent.dashboard.notReturned")}
-          </div>
-          <Show when={sessionMetrics.teamUsage().tokens > 0}>
-            <div class="mt-1 text-[10px] leading-4 text-v2-text-text-muted">
-              {language.t("deveagent.statusbar.subagents")} <span class="tabular-nums">{number().format(sessionMetrics.teamUsage().tokens)}</span> · <span class="tabular-nums">{sessionMetrics.teamUsage().rounds}</span> {language.t("deveagent.dashboard.rounds")}
-              {sessionMetrics.teamUsageSource() === "native-session" ? ` · ${language.t("deveagent.dashboard.subsessions")}` : ` · ${language.t("deveagent.dashboard.legacyLedgerFallback")}`}
-            </div>
-          </Show>
-        </div>
-        <div class={CARD}>
-          <div class={SECTION_TITLE}>{language.t("deveagent.dashboard.metricsSource")}</div>
-          <div class="mt-1 text-[12px] font-medium text-v2-text-text-base">
-            {sessionMetrics.hasContext() ? language.t("deveagent.dashboard.sessionData") : language.t("deveagent.dashboard.awaitingModelUsage")}
-          </div>
-        </div>
       </div>
+      {/* Configuration lives behind one fold. The rail is 240-340px wide and is
+          read as a live status surface; five open forms (failover, session
+          vision chain, vision API, speech, role routing) turned it into a
+          settings page and pushed every metric above the fold. The status
+          summary stays visible inside the fold's own one-line title. */}
+      <details data-component="deveagent-settings-fold" class="rounded-lg border border-v2-border-border-base bg-v2-background-bg-layer-02">
+        <summary data-component="deveagent-settings-fold-summary" class="cursor-pointer px-3 py-2.5 text-[11px] font-[520] uppercase tracking-wide text-v2-text-text-muted hover:text-v2-text-text-base">
+          {language.t("deveagent.shell.settings")}
+          {/* Only a configured chain is worth surfacing here; the empty case
+              stays silent rather than printing a half-translated sentence
+              ("未配置 fallback chain") in the fold's own title. */}
+          <Show when={fallbackChain().length > 0}>
+            <span class="ml-2 normal-case tracking-normal text-[10px] text-v2-text-text-faint">
+              failover {fallbackChain().length}
+            </span>
+          </Show>
+        </summary>
+        <div class="flex flex-col gap-2 p-3 pt-0">
       <div class={CARD}>
         <div class="flex items-center justify-between gap-2">
           <div class={SECTION_TITLE}>Provider Failover</div>
@@ -1409,12 +1422,20 @@ export function DeveagentDashboard() {
       </details>
       <DeveAgentSttConfigPanel />
       <DeveAgentRoleProfilesPanel />
+        </div>
+      </details>
 
-       <details class="rounded-lg border border-v2-border-border-base bg-v2-background-bg-layer-02">
-        <summary class="cursor-pointer px-3 py-2.5 text-[11px] font-[520] uppercase tracking-wide text-v2-text-text-muted hover:text-v2-text-text-base">
+       <details data-component="deveagent-more-sections-fold" class="rounded-lg border border-v2-border-border-base bg-v2-background-bg-layer-02">
+        <summary data-component="deveagent-more-sections-fold-summary" class="cursor-pointer px-3 py-2.5 text-[11px] font-[520] uppercase tracking-wide text-v2-text-text-muted hover:text-v2-text-text-base">
           {language.t("deveagent.dashboard.moreSections")}
         </summary>
         <div class="flex flex-col gap-2 p-3 pt-0">
+       <div class={CARD}>
+         <div class={SECTION_TITLE}>{language.t("deveagent.dashboard.metricsSource")}</div>
+         <div class="mt-1 text-[12px] font-medium text-v2-text-text-base">
+           {sessionMetrics.hasContext() ? language.t("deveagent.dashboard.sessionData") : language.t("deveagent.dashboard.awaitingModelUsage")}
+         </div>
+       </div>
        <DeveagentTrustCard />
        <DeveagentCuAuditCard />
        <DeveagentRunsCard />

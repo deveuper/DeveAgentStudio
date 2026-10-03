@@ -71,14 +71,29 @@ const ModelList: Component<{
       }}
     >
       {(i) => (
-        <div class="w-full flex items-center gap-x-2 text-13-regular">
-          <span class="truncate">{i.name}</span>
-          <Show when={isFree(i.provider.id, i.cost)}>
-            <Tag>{language.t("model.tag.free")}</Tag>
-          </Show>
-          <Show when={i.latest}>
-            <Tag>{language.t("model.tag.latest")}</Tag>
-          </Show>
+        <div class="w-full flex items-center gap-x-2 text-13-regular" data-component="model-row" data-model-id={i.id}>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-x-2">
+              <span class="truncate">{i.name}</span>
+              <Show when={isFree(i.provider.id, i.cost)}>
+                <Tag>{language.t("model.tag.free")}</Tag>
+              </Show>
+              <Show when={i.latest}>
+                <Tag>{language.t("model.tag.latest")}</Tag>
+              </Show>
+            </div>
+            {/* The wire id is what the provider actually receives. When a custom
+                provider config carries a placeholder id with the real slug in
+                the display name, this is the only place the mismatch is visible
+                — before it surfaces as "model is not a valid model ID" after
+                the send. Hidden when id and name match, so the common case
+                stays one quiet line. */}
+            <Show when={i.id !== i.name}>
+              <div class="truncate text-[10px] leading-4 text-v2-text-text-faint" title={i.id}>
+                {language.t("model.wireId")}: {i.id}
+              </div>
+            </Show>
+          </div>
         </div>
       )}
     </List>

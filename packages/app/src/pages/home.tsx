@@ -367,7 +367,7 @@ function HomeDesign() {
 
   return (
     <div class="rounded-[10px] shadow-[var(--v2-elevation-raised)] m-2 min-h-0 lg:overflow-hidden bg-v2-background-bg-base self-stretch flex-1">
-      <div class="mx-auto grid w-full h-full max-w-[1080px] gap-8 px-6 pb-16 lg:grid-cols-[280px_minmax(0,720px)]">
+      <div class="mx-auto grid w-full h-full max-w-[1080px] grid-rows-[auto_minmax(0,1fr)] gap-8 px-6 pt-12 pb-16 lg:grid-cols-[280px_minmax(0,720px)] lg:grid-rows-[minmax(0,1fr)]">
         <HomeProjectColumn
           projects={projects()}
           selected={state.selection}
@@ -392,7 +392,7 @@ function HomeDesign() {
         />
 
         <section
-          class="min-h-0 min-w-0 flex-1 flex flex-col pt-12"
+          class="min-h-0 min-w-0 flex-1 flex flex-col"
           aria-label={language.t("sidebar.project.recentSessions")}
         >
           <HomeSessionSearch
@@ -413,7 +413,7 @@ function HomeDesign() {
             onSelect={selectSearchSession}
           />
           <ScrollView class="mt-3 min-h-0 flex-1">
-            <div class="pt-3 flex flex-col gap-6">
+            <div class="pt-1 flex flex-col gap-6">
               <Show
                 when={!sessionLoad.isLoading}
                 fallback={<HomeSessionSkeleton label={language.t("common.loading")} />}
@@ -618,9 +618,16 @@ function HomeProjectColumn(props: {
   const global = useGlobal()
   const dialog = useDialog()
   const controller = useServerManagementController({ navigateOnAdd: false })
+  // No projects open anywhere: the column shows its own empty state instead of
+  // just a bare header, so the welcome screen reads as two populated columns.
+  const hasProjects = () =>
+    global.servers.list().some((conn) => global.createServerCtx(conn).projects.list().length > 0)
   return (
-    <aside class="flex min-w-0 flex-col lg:pt-[52px] mt-14 gap-4" aria-label={props.language.t("home.projects")}>
-      <div class="flex h-7 min-w-0 items-center justify-between pl-1.5">
+    <aside
+      class="flex min-h-0 min-w-0 max-h-[50vh] flex-col gap-4 overflow-y-auto lg:max-h-none"
+      aria-label={props.language.t("home.projects")}
+    >
+      <div class="flex h-9 min-w-0 items-center justify-between pl-1.5">
         <div class={HOME_SECTION_LABEL}>{props.language.t("home.projects")}</div>
         <Show when={global.servers.list().length === 1}>
           <IconButtonV2
@@ -634,6 +641,24 @@ function HomeProjectColumn(props: {
           />
         </Show>
       </div>
+      <Show when={global.servers.list().length > 0 && !hasProjects()}>
+        <div class="flex min-w-0 flex-col gap-4">
+          <div class="flex h-7 min-w-0 items-center pl-1.5">
+            <div class={HOME_SECTION_LABEL}>{props.language.t("sidebar.empty.title")}</div>
+          </div>
+          <div class="min-w-0 pl-1.5">
+            <ButtonV2
+              data-action="home-open-project"
+              variant="neutral"
+              size="normal"
+              icon="folder-add-left"
+              onClick={() => props.chooseProject(global.servers.list()[0]!)}
+            >
+              {props.language.t("command.project.open")}
+            </ButtonV2>
+          </div>
+        </div>
+      </Show>
       <Show
         when={global.servers.list().length > 1}
         fallback={<HomeProjectList {...props} server={global.servers.list()[0]!} />}

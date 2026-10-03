@@ -1,11 +1,22 @@
 // DeveAgent skill doctor (inspired by Claude Code's /skill-doctor).
 //
-// Context spend is only attributable when the things that occupy it are
-// measurable and their usage is known. The auto-skill module already keeps a
-// provenance ledger (`.deveagent/auto-skills.json`, keyed by skill name) next to
-// the files it writes (`.deveagent/skills/<name>.md`); this module joins the two
-// so the report can say "this skill is installed, costs roughly N tokens, and has
-// never been used".
+// It reports the size of the workspace skill store — a real, measurable fact —
+// and it deliberately reports NOTHING about usage, because usage is not
+// recorded anywhere (see below).
+//
+// What this module must not claim:
+//   - "N skills never used". `markAutoSkillUsed()` is STAGED (no production
+//     caller), so every ledger entry carries `useCount: 0` for the trivial
+//     reason that nothing ever increments it. Reporting that as "never used"
+//     was a fabricated metric: it would have described every installed skill as
+//     dead, including ones a user actually relies on. The report now carries
+//     `usageRecorded: false` and the summary says usage is not recorded. Do not
+//     reintroduce an "unused" count until a real caller records usage.
+//   - "what each costs in context". The store scanned here
+//     (`<workspace>/.deveagent/skills`, written by `writeAutoSkill`) is not on
+//     any load path, so none of it is injected into a session and none of it
+//     costs context. The sizes below are ON-DISK sizes of staged files; the
+//     report is explicit that they are not injected. `injected: false`.
 //
 // Honesty rules this module obeys:
 //   - Token cost is chars/4, the repo's documented fallback ratio (see
@@ -13,10 +24,10 @@
 //     (`approxTokens`, `~` in the summary). It is never presented as a measured
 //     token count.
 //   - `untracked` is reported instead of inventing provenance: a skill with no
-//     ledger record gets useCount 0 and the ledger's own default state, never a
-//     fabricated history.
-//   - A ledger entry whose file is gone occupies no context and is therefore not
-//     listed; the ledger may legitimately outlive a hand-deleted file.
+//     ledger record is marked untracked, never given a fabricated history.
+//   - A ledger entry whose file is gone occupies no disk space here and is
+//     therefore not listed; the ledger may legitimately outlive a
+//     hand-deleted file.
 //   - A skill file that cannot be read is skipped, and the report says so by
 //     omission rather than by guessing a size.
 //
@@ -44,10 +55,14 @@ export type SkillDoctorReport = {
   skills: Array<{
     id: string
     name: string
-    /** characters the skill body occupies when injected */
+    /** on-disk characters of the staged body (capped at the injection slice) */
     chars: number
     /** rough token cost (chars/4 is the repo's established fallback ratio) */
     approxTokens: number
+    /**
+     * Ledger value. Always 0 in practice: nothing calls `markAutoSkillUsed`, so
+     * treat it as "not recorded", never as "this skill was never used".
+     */
     useCount: number
     patchCount: number
     state: "active" | "stale" | "archived"
@@ -55,16 +70,31 @@ export type SkillDoctorReport = {
     untracked: boolean
     lastUsedAt?: number
   }>
-  totals: { count: number; chars: number; approxTokens: number; unusedCount: number; unusedTokens: number }
-  /** one-line honest summary, e.g. "12 skills · ~3.4K tokens · 5 never used (~1.2K tokens)" */
+  totals: { count: number; chars: number; approxTokens: number }
+  /**
+   * Always false: no production code records skill usage, so no usage claim can
+   * be made. A consumer that needs usage must wire `markAutoSkillUsed` first.
+   */
+  usageRecorded: boolean
+  /**
+   * Always false: `<workspace>/.deveagent/skills` is not on any load path, so
+   * these files are staged on disk and not injected into any session. The
+   * `chars`/`approxTokens` figures are therefore NOT a context cost.
+   */
+  injected: boolean
+  /** one-line honest summary, e.g. "12 skills · ~3.4K tokens on disk (not injected) · usage not recorded" */
   summary: string
 }
 
 /**
- * The characters a skill actually contributes when injected: a leading `---`
- * frontmatter fence (the shape `writeAutoSkill` emits) plus the bare
- * `name:`/`description:` lines the local-skill loader also removes, then capped
- * at the injection slice.
+ * The characters a staged skill file holds on disk. The `writeAutoSkill`
+ * frontmatter fence and the bare `name:`/`description:` lines are stripped (the
+ * shape the loaders also remove), then the result is capped at the injection
+ * slice so the number can be compared against what a loader would ever carry.
+ *
+ * These are ON-DISK sizes of staged files. Nothing loads this directory, so
+ * none of it currently occupies context; the report carries `injected: false`
+ * and the summary says so.
  */
 function skillBody(content: string): string {
   const withoutFence = content.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, "")
@@ -92,13 +122,20 @@ function formatApproxTokens(tokens: number): string {
 function emptyReport(summary: string): SkillDoctorReport {
   return {
     skills: [],
-    totals: { count: 0, chars: 0, approxTokens: 0, unusedCount: 0, unusedTokens: 0 },
+    totals: { count: 0, chars: 0, approxTokens: 0 },
+    usageRecorded: false,
+    injected: false,
     summary,
   }
 }
 
 /**
- * Report which installed skills are unused and what each one costs in context.
+ * Report the size of the workspace skill store.
+ *
+ * It does NOT report usage: no production code records it, so any "never used"
+ * figure would be fabricated (see the module header). `usageRecorded` is always
+ * false and the summary says so.
+ *
  * Never throws: a missing directory, an unreadable file, or a corrupt ledger
  * degrades to a smaller (or empty) report instead of a failure.
  */
@@ -106,7 +143,7 @@ export async function inspectSkills(directory: string | undefined): Promise<Skil
   // No workspace means no ledger and no workspace skill store: there is nothing
   // to attribute, and saying so is more honest than reporting global state.
   if (typeof directory !== "string" || directory.trim() === "") {
-    return emptyReport("no workspace directory provided — 0 skills inspected")
+    return emptyReport("no workspace directory given — 0 staged skills inspected")
   }
 
   const workspace = path.resolve(directory)
@@ -134,13 +171,15 @@ export async function inspectSkills(directory: string | undefined): Promise<Skil
     const nameMatch = content.match(/^name:[ \t]*(.+)$/m)
     const chars = skillBody(content).length
     const entry = ledger[id]
-    const useCount = entry?.useCount ?? 0
     skills.push({
       id,
       name: nameMatch ? nameMatch[1].trim() : id,
       chars,
       approxTokens: approxTokens(chars),
-      useCount,
+      // Ledger value only. It is 0 whenever the ledger is absent OR usage was
+      // never recorded, and those two cases are indistinguishable — which is
+      // exactly why the report must not turn this into a "never used" claim.
+      useCount: entry?.useCount ?? 0,
       patchCount: entry?.patchCount ?? 0,
       // Untracked skills carry the ledger's own default for an unknown state
       // rather than an invented one.
@@ -150,17 +189,9 @@ export async function inspectSkills(directory: string | undefined): Promise<Skil
     })
   }
 
-  // Unused first (largest chars first), then used by useCount ascending; ties
-  // fall back to chars then id so the order is total and reproducible.
+  // Largest first, then id: the only ordering this report can justify is by
+  // size, because usage is not recorded and cannot rank anything.
   skills.sort((a, b) => {
-    const aUnused = a.useCount === 0 ? 0 : 1
-    const bUnused = b.useCount === 0 ? 0 : 1
-    if (aUnused !== bUnused) return aUnused - bUnused
-    if (aUnused === 0) {
-      if (a.chars !== b.chars) return b.chars - a.chars
-      return byID(a, b)
-    }
-    if (a.useCount !== b.useCount) return a.useCount - b.useCount
     if (a.chars !== b.chars) return b.chars - a.chars
     return byID(a, b)
   })
@@ -169,21 +200,21 @@ export async function inspectSkills(directory: string | undefined): Promise<Skil
   // Sum the per-skill approximations so the total always equals the parts a
   // reader can add up; each value is independently rounded chars/4.
   const tokens = skills.reduce((sum, skill) => sum + skill.approxTokens, 0)
-  const unused = skills.filter((skill) => skill.useCount === 0)
-  const unusedTokens = unused.reduce((sum, skill) => sum + skill.approxTokens, 0)
 
   const totals = {
     count: skills.length,
     chars,
     approxTokens: tokens,
-    unusedCount: unused.length,
-    unusedTokens,
   }
 
+  // Both facts in the summary are stated as what they are: a staged on-disk
+  // size (not an injected context cost) and an explicit admission that usage is
+  // not recorded. The previous wording ("N never used") asserted a usage claim
+  // the data cannot support.
   const summary =
     skills.length === 0
-      ? "0 skills installed in this workspace — nothing to attribute"
-      : `${skills.length} skill${skills.length === 1 ? "" : "s"} · ${formatApproxTokens(tokens)} · ${unused.length} never used (${formatApproxTokens(unusedTokens)})`
+      ? "0 staged skills in this workspace — nothing to report"
+      : `${skills.length} staged skill${skills.length === 1 ? "" : "s"} · ${formatApproxTokens(tokens)} on disk (not injected) · usage not recorded`
 
-  return { skills, totals, summary }
+  return { skills, totals, usageRecorded: false, injected: false, summary }
 }

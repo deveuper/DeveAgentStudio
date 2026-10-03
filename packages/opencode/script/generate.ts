@@ -18,8 +18,14 @@ async function loadModelsData() {
       signal: AbortSignal.timeout(5_000),
     })
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    // `await` matters: returning the bare promise lets a body-read timeout
+    // reject AFTER this try/catch has exited, so the abort escaped as an
+    // uncaught TimeoutError and failed the build instead of falling back to the
+    // empty snapshot. That is why packaging failed intermittently whenever
+    // models.dev was slow.
+    const body = await response.text()
     console.log("Loaded models.dev snapshot")
-    return response.text()
+    return body
   } catch (error) {
     // The runtime has its own cache and online enrichment path. Keep offline
     // packaging possible without inventing a provider or model catalogue.

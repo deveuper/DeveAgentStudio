@@ -66,7 +66,12 @@ export function DeveagentLayoutSidebar(props: { workspaceContent?: JSX.Element }
   const itemClass = (id: string) =>
     `flex h-8 w-full min-w-0 items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors ${
       active() === id
-        ? "bg-v2-background-bg-accent/10 text-v2-text-text-accent"
+        ? // Solid accent surface with inverted text. The old 10% accent wash
+          // under accent-coloured text measured 2.09:1 in the dark scheme. The
+          // deeper accent tone is used as the surface so the inverted
+          // foreground clears AA in BOTH schemes (white-on-mid-orange is only
+          // 3.1:1).
+          "text-v2-text-text-inverse [background-color:var(--v2-text-text-accent)]"
         : "text-text-base hover:bg-v2-background-bg-layer-01 hover:text-text-strong"
     }`
 
@@ -165,7 +170,7 @@ export function DeveagentLayoutSidebar(props: { workspaceContent?: JSX.Element }
                         type="button"
                         data-action={`deveagent-work-pack-${pack.id}`}
                         class={`w-full min-w-0 rounded px-2 py-1.5 text-left transition-colors ${
-                          selected() ? "bg-v2-background-bg-accent/10 text-v2-text-text-accent" : "text-text-base hover:bg-v2-background-bg-layer-01"
+                          selected() ? "[background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse" : "text-text-base hover:bg-v2-background-bg-layer-01"
                         }`}
                         onClick={() => {
                           composer.applyWorkPack(pack.id)
@@ -190,7 +195,7 @@ export function DeveagentLayoutSidebar(props: { workspaceContent?: JSX.Element }
                           {language.locale() === "zh" || language.locale() === "zht" ? pack.description : pack.descriptionEn ?? pack.description}
                         </span>
                         <Show when={pack.role}>
-                          <span class="mt-1 inline-block rounded bg-v2-background-bg-accent/10 px-1.5 py-0.5 text-[9px] font-medium text-v2-text-text-accent">
+                          <span class="mt-1 inline-block rounded [background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse px-1.5 py-0.5 text-[9px] font-medium">
                             {language.t("deveagent.layout.role")}: {pack.role}
                           </span>
                         </Show>
@@ -258,7 +263,7 @@ export function DeveagentLayoutSidebar(props: { workspaceContent?: JSX.Element }
               <span class="min-w-0 flex-1 truncate font-medium">{language.t("deveagent.sidebar.skillStore")}</span>
               {selectedSkillCount() > 0 && (
                 <span
-                  class="shrink-0 rounded-full bg-v2-background-bg-accent/15 px-1.5 py-0.5 text-[10px] font-medium text-v2-text-text-accent"
+                  class="shrink-0 rounded-full [background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse px-1.5 py-0.5 text-[10px] font-medium"
                   title="Current session selected Skill count"
                 >
                   {selectedSkillCount()}
@@ -307,7 +312,7 @@ export function DeveagentLayoutSidebar(props: { workspaceContent?: JSX.Element }
               <span class="min-w-0 flex-1 truncate">{language.t("deveagent.sidebar.team")}</span>
               {teamMemberCount() > 0 && (
                 <span
-                  class="shrink-0 rounded-full bg-v2-background-bg-accent/15 px-1.5 py-0.5 text-[10px] font-medium text-v2-text-text-accent"
+                  class="shrink-0 rounded-full [background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse px-1.5 py-0.5 text-[10px] font-medium"
                   title="Current configured team member count"
                 >
                   {teamMemberCount()}

@@ -46,10 +46,18 @@ export function mapV2Foreground(
   const bgInverse = resolveGreyRef(semantics["v2-background-bg-inverse"], primitives)
   const inverseTarget = hexToOklch(bgInverse).l > 0.55 ? 1100 : greyHex(primitives, 50) ? 50 : 100
 
+  const bodyText = isDark ? blend("#ffffff", body, 0.9) : shift(body, { l: -0.07, c: 1.04 })
+  // The muted/faint tiers come from an unclamped lightness shift, and a theme's
+  // `text-weak` override lands in the same visual slot. Both are floored — and
+  // ordered — by the shared pass in `resolve.ts` over the FINAL merged tokens,
+  // which is also what covers hand-written `v2Overrides`.
+  const mutedText = overrides["text-weak"] ?? shift(body, { l: isDark ? -0.11 : 0.11, c: 0.9 })
+  const faintText = shift(body, { l: isDark ? -0.2 : 0.21, c: isDark ? 0.78 : 0.72 })
+
   return {
-    "v2-text-text-base": isDark ? blend("#ffffff", body, 0.9) : shift(body, { l: -0.07, c: 1.04 }),
-    "v2-text-text-muted": overrides["text-weak"] ?? shift(body, { l: isDark ? -0.11 : 0.11, c: 0.9 }),
-    "v2-text-text-faint": shift(body, { l: isDark ? -0.2 : 0.21, c: isDark ? 0.78 : 0.72 }),
+    "v2-text-text-base": bodyText,
+    "v2-text-text-muted": mutedText,
+    "v2-text-text-faint": faintText,
     "v2-icon-icon-base": greyRef(pickGrey(primitives, bgBase, 7, isDark ? 400 : 800)),
     "v2-icon-icon-muted": greyRef(pickGrey(primitives, bgBase, 3, 600)),
     "v2-icon-icon-inverse": greyRef(pickGrey(primitives, bgInverse, 7, inverseTarget)),

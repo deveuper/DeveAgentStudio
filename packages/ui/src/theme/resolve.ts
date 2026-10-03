@@ -1,5 +1,107 @@
 import type { ColorValue, DesktopTheme, HexColor, ResolvedTheme, ThemeVariant } from "./types"
-import { blend, generateNeutralScale, generateScale, hexToOklch, hexToRgb, shift, withAlpha } from "./color"
+import { blend, contrastRatio, generateNeutralScale, generateScale, hexToOklch, hexToRgb, shift, withAlpha } from "./color"
+
+/** WCAG AA for body text — the floor every quiet text tier has to clear. */
+export const QUIET_TEXT_MIN_CONTRAST = 4.5
+/**
+ * How far a stronger quiet tier must stay above the tier below it. Without a
+ * margin a floored quietest tier can land exactly on the next tier's ratio and
+ * flatten the very hierarchy the tiers exist to express.
+ */
+export const QUIET_TEXT_ORDER_MARGIN = 0.05
+/** Blend-search resolution; fine enough that a raised tier lands near its target. */
+const QUIET_TEXT_STEPS = 100
+
+interface QuietTextOptions {
+  /** Tokens naming the surfaces the quiet tiers render on. */
+  surfaces: readonly string[]
+  /**
+   * The quiet tiers, quietest first. Each one is floored above the tier before
+   * it, so the visual order survives the floor.
+   */
+  tiers: readonly string[]
+  /** Foreground tiers used as blend anchors, most extreme first. */
+  anchors: readonly string[]
+}
+
+/** Follow `var(--token)` indirection to the concrete primitive it lands on. */
+function resolveTokenHex(value: string | undefined, tokens: Record<string, string>): HexColor | undefined {
+  let current = value
+  for (let hop = 0; hop < 8; hop++) {
+    if (typeof current !== "string") return undefined
+    if (current.startsWith("#")) return current as HexColor
+    const ref = current.match(/^var\(--([^)]+)\)$/)?.[1]
+    if (!ref) return undefined
+    current = tokens[ref]
+  }
+  return undefined
+}
+
+/**
+ * Raise the quiet text tiers until they clear the contrast floor against every
+ * surface they can render on — without ever making a tier worse and without
+ * letting a quieter tier end up brighter than the tier above it.
+ *
+ * The generator's lightness shift has no contrast floor, and a theme's
+ * hand-written override merges last and wins outright: measured on the packaged
+ * app, text-faint sat at 1.92:1 on the dark card and one theme's muted tier at
+ * 1.38:1 on its own light surface — the user-reported "colors too pale", where
+ * the text is effectively invisible rather than merely quiet.
+ *
+ * The floor and the hierarchy are separate requirements that can conflict. The
+ * floors alone left three shipped themes with a "faint" tier BRIGHTER than
+ * their "muted" tier (deveagent-forest light: 4.99 against 4.52). Raising the
+ * stronger tier keeps both honest; pushing the quieter tier back below the
+ * floor would restore the unreadable text this all exists to prevent.
+ *
+ * Blending toward a readable anchor keeps the theme's hue. The anchors are the
+ * theme's other foreground tiers, most-extreme first, because a few themes ship
+ * a body tier that is itself below the floor and anchoring on it alone could
+ * move the color the wrong way. A candidate is adopted only when it improves
+ * the worst-case ratio, so a theme this cannot help is left exactly as its
+ * author wrote it.
+ *
+ * A value that is not a concrete hex — an unresolvable `var(...)` override — is
+ * passed through: it is a deliberate author choice that cannot be measured here.
+ */
+export function enforceQuietTextContrast<T extends Record<string, string>>(tokens: T, options: QuietTextOptions): T {
+  const backgrounds = options.surfaces.map((key) => resolveTokenHex(tokens[key], tokens))
+  const surfaces = backgrounds.filter((hex): hex is HexColor => hex !== undefined)
+  if (surfaces.length === 0) return tokens
+  const anchors = options.anchors
+    .map((key) => resolveTokenHex(tokens[key], tokens))
+    .filter((hex): hex is HexColor => hex !== undefined)
+  if (anchors.length === 0) return tokens
+
+  const worst = (c: HexColor) => Math.min(...surfaces.map((bg) => contrastRatio(c, bg)))
+  // Indexed writes need a concrete record; `T` is only known to be a string map.
+  const next: Record<string, string> = { ...tokens }
+  let above: number | undefined
+  for (const tier of options.tiers) {
+    const hex = resolveTokenHex(next[tier], tokens)
+    if (!hex) continue
+    const target = Math.max(QUIET_TEXT_MIN_CONTRAST, above === undefined ? 0 : above + QUIET_TEXT_ORDER_MARGIN)
+    const start = worst(hex)
+    let best = hex
+    let bestRatio = start
+    if (start < target) {
+      outer: for (const anchor of anchors) {
+        for (let step = 1; step <= QUIET_TEXT_STEPS; step++) {
+          const candidate = blend(anchor, hex, step / QUIET_TEXT_STEPS)
+          const ratio = worst(candidate)
+          if (ratio > bestRatio) {
+            best = candidate
+            bestRatio = ratio
+          }
+          if (ratio >= target) break outer
+        }
+      }
+      next[tier] = best
+    }
+    above = bestRatio
+  }
+  return next as T
+}
 
 export function resolveThemeVariant(variant: ThemeVariant, isDark: boolean): ResolvedTheme {
   const colors = getColors(variant)
@@ -452,8 +554,23 @@ export function resolveThemeVariant(variant: ThemeVariant, isDark: boolean): Res
     tokens["text-stronger"] = tokens["text-strong"]
   }
 
-  return tokens
+  // Runs last so it also covers a theme's hand-written `text-weak` override
+  // (catppuccin-frappe light ships one at 1.36:1 on its own surface). The v2
+  // layer has its own surfaces; this pass protects the v1 classes — the
+  // overview rail's settings forms read `text-text-weak` / `text-text-weaker`,
+  // which are NOT the v2 tokens.
+  return enforceQuietTextContrast(tokens, {
+    surfaces: V1_QUIET_SURFACES,
+    tiers: V1_QUIET_TIERS,
+    anchors: V1_QUIET_ANCHORS,
+  })
 }
+
+/** v1 surfaces a quiet text tier can sit on: the four `background-*` tokens. */
+const V1_QUIET_SURFACES = ["background-base", "background-weak", "background-strong", "background-stronger"] as const
+/** Quietest first: `text-weaker` is the dimmest tier, `text-weak` the next one up. */
+const V1_QUIET_TIERS = ["text-weaker", "text-weak"] as const
+const V1_QUIET_ANCHORS = ["text-strong", "text-base", "text-invert-base"] as const
 
 interface ThemeColors {
   compact: boolean

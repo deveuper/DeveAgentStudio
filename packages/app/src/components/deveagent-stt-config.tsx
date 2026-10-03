@@ -266,7 +266,7 @@ export function DeveAgentSttConfigPanel() {
               <button
                 type="button"
                 data-action="deveagent-stt-install-local"
-                class="mt-2 rounded border border-v2-border-border-focus/40 bg-v2-background-bg-accent/10 px-2 py-1 text-[11px] font-medium text-v2-text-text-accent disabled:opacity-50"
+                class="mt-2 rounded border border-transparent [background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse px-2 py-1 text-[11px] font-medium disabled:opacity-50"
                 disabled={installing() || local()?.installing || local()?.supported === false}
                 onClick={() => void installLocal()}
               >
@@ -281,7 +281,7 @@ export function DeveAgentSttConfigPanel() {
         <button
           type="button"
           data-action="deveagent-stt-save"
-          class="rounded border border-v2-border-border-focus/40 bg-v2-background-bg-accent/10 px-2 py-1 text-[11px] font-medium text-v2-text-text-accent disabled:opacity-50"
+          class="rounded border border-transparent [background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse px-2 py-1 text-[11px] font-medium disabled:opacity-50"
           disabled={saving()}
           onClick={() => void save()}
         >

@@ -1653,8 +1653,19 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     return models.find({ providerID: bound.providerID, modelID: bound.modelID })
   })
 
+  // R7-follow-up: the chip must not silently present a model the current
+  // channel cannot serve. `visible()` is the same gate the picker uses, so a
+  // selection that resolves but is hidden there (stale persisted pick, catalog
+  // drift) gets an explicit marker instead of failing only at send time.
+  const currentModelUnavailable = createMemo(() => {
+    const current = props.controls.model.selection.current()
+    if (!current) return false
+    return !models.visible({ modelID: current.id, providerID: current.provider.id })
+  })
+
   const modelControlState = createMemo<ComposerModelControlState>(() => ({
     loading: providersLoading(),
+    unavailable: currentModelUnavailable(),
     paid: props.controls.model.paid,
     // With a role active, messages route to the role profile model first and
     // this selector shows the fallback — say so instead of implying otherwise.
@@ -1980,8 +1991,9 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                         }
                         restoreFocus()
                       }}
-                      class="max-w-[130px] justify-start rounded-md border border-v2-border-border-focus/50 bg-v2-background-bg-accent/15 text-v2-text-text-accent hover:bg-v2-background-bg-accent/20"
-                      valueClass="truncate text-[13px] font-[560] leading-5 text-v2-text-text-accent"
+                      class="max-w-[130px] justify-start rounded-md border border-transparent text-v2-text-text-inverse [&_svg]:text-v2-text-text-inverse hover:opacity-90"
+                      style={{ "background-color": "var(--v2-text-text-accent)" }}
+                      valueClass="truncate text-[13px] font-[560] leading-5 text-v2-text-text-inverse"
                       triggerStyle={control()}
                       triggerProps={{ "data-action": "prompt-deveagent-mode", title: language.t("deveagent.composer.switchHint") }}
                       variant="ghost"
@@ -2068,7 +2080,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                       <Icon name="models" size="small" />
                       <span class="ml-1">Skill</span>
                       <Show when={store.deveagentSkills.length > 0}>
-                        <span class="ml-1 rounded-full bg-v2-background-bg-accent/15 px-1.5 text-[10px] leading-4 text-v2-text-text-accent">
+                        <span class="ml-1 rounded-full [background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse px-1.5 text-[10px] leading-4">
                           {store.deveagentSkills.length}
                         </span>
                       </Show>
@@ -2193,7 +2205,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                       <button
                         type="button"
                         data-action="prompt-selected-expert"
-                        class="flex h-7 max-w-[148px] shrink-0 items-center gap-1 rounded-md border border-v2-border-border-focus/40 bg-v2-background-bg-accent/10 px-2 text-[12px] font-[520] text-v2-text-text-accent"
+                        class="flex h-7 max-w-[148px] shrink-0 items-center gap-1 rounded-md border border-transparent [background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse px-2 text-[12px] font-[520]"
                         title={`${expert().name}: ${expert().role ?? "read-only advisor"}`}
                         onClick={() => window.dispatchEvent(new CustomEvent("deveagent:open-panel", { detail: "experts" }))}
                       >
@@ -2214,9 +2226,11 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                       tabIndex={store.mode === "normal" ? undefined : -1}
                       icon={stopping() ? "stop" : store.mode === "shell" ? "arrow-undo-down" : "arrow-up"}
                       variant="primary"
-                      class="size-8 rounded-full shadow-[var(--v2-elevation-button-contrast)] disabled:opacity-50"
+                      class="size-8 rounded-full shadow-[var(--v2-elevation-button-contrast)] disabled:opacity-50 [--icon-invert-base:var(--v2-text-text-inverse)]"
                       style={{
-                        "background-color": "var(--v2-background-bg-accent)",
+                        // The deeper accent tone, not bg-accent: white on
+                        // bg-accent measured 3.11:1 in the dark scheme.
+                        "background-color": "var(--v2-text-text-accent)",
                       }}
                       aria-label={stopping() ? language.t("prompt.action.stop") : language.t("prompt.action.send")}
                     />
@@ -2272,6 +2286,7 @@ type ComposerAgentControlState = {
 }
 
 type ComposerModelControlState = {
+  unavailable: boolean
   loading: boolean
   paid: boolean
   title: string
@@ -2284,7 +2299,7 @@ type ComposerModelControlState = {
   onUnpaidClick: () => void
 }
 
-function ComposerPickerTrigger(props: ComponentProps<"button"> & { state: ComposerPickerTriggerState }) {
+function ComposerPickerTrigger(props: ComponentProps<"button"> & { state: ComposerPickerTriggerState  }) {
   const [local, rest] = splitProps(props, ["state", "class", "style", "onClick"])
   return (
     <button
@@ -2398,6 +2413,7 @@ function ComposerAgentControl(props: { state: ComposerAgentControlState }) {
 }
 
 function ComposerModelControl(props: { state: ComposerModelControlState }) {
+  const language = useLanguage()
   return (
     <Show when={!props.state.loading}>
       <Show
@@ -2452,6 +2468,16 @@ function ComposerModelControl(props: { state: ComposerModelControlState }) {
               )}
             </Show>
             <span class="truncate">{props.state.modelName}</span>
+            <Show when={props.state.unavailable}>
+              <span
+                data-component="prompt-model-unavailable"
+                class="shrink-0 rounded px-1 text-[9px] font-medium"
+                style={{ background: "var(--v2-state-bg-warning)", color: "var(--v2-state-fg-warning)" }}
+                title={language.t("deveagent.composer.modelUnavailable")}
+              >
+                {language.t("deveagent.composer.modelUnavailable")}
+              </span>
+            </Show>
             <Icon name="chevron-down" size="small" class="shrink-0 text-v2-icon-icon-muted" />
           </ModelSelectorPopover>
         </TooltipKeybind>

@@ -1,7 +1,7 @@
 {
   "name": "@opencode-ai/desktop",
   "private": true,
-  "version": "1.17.8",
+  "version": "1.17.9",
   "description": "DeveAgent Studio autonomous agent workstation",
   "type": "module",
   "license": "MIT",

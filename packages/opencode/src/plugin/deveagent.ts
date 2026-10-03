@@ -32,6 +32,7 @@ import os from "node:os"
 import path from "node:path"
 import { promisify } from "node:util"
 import { tool, type Hooks, type PluginInput, type PluginModule, type PluginOptions } from "@opencode-ai/plugin"
+import { BackgroundSubagentsUnavailableError, ChildTurnError } from "@/tool/task-errors"
 import {
   convertWithMarkItDown,
   getMarkItDownRuntimeStatus,
@@ -58,6 +59,8 @@ export { clearVisionConfig, loadVisionConfig, newVisionTelemetry, resetVisionTel
 import { appendGuardianTrace, guardianReview, publishGuardianAbort, recordGuardianOutcome, resetGuardianCircuit } from "./deveagent-guardian"
 import { proposeNextGoal } from "./deveagent-recap"
 import { verifyGoalIndependently, loadVerifierConfig, type IndependentVerification } from "./deveagent-verifier"
+import { summarizeGoalEvidence, verifyGoalEvidence, type GoalEvidenceInput, type GoalEvidenceResult } from "./deveagent-goal-evidence"
+import { recordProviderFallback } from "./deveagent-fallbacks"
 import { appendCuAudit } from "./deveagent-cu-audit"
 import { isValidTimeZone, nextCronRun, parseCron } from "./deveagent-cron"
 
@@ -1918,7 +1921,8 @@ export async function buildDeveAgentTurnTail(input: {
       "- You are in autonomous goal mode. Continue working without stopping.",
       "- After completing each step, immediately proceed to the next.",
       "- Do NOT ask for confirmation. Do NOT stop until all criteria are met.",
-      "- When all criteria are met, call goal-verify with met=true.",
+      "- When all criteria are met, call goal-verify with met=true AND evidence: one {criterion, kind, value} entry per criterion.",
+      "- Cite real artifacts (a `file` must exist in the workspace and be non-empty). A claim with no verifiable artifact is refused, and command/test citations are recorded but not re-run.",
     )
   }
   if (goal.active && goal.status !== "verified" && goal.status !== "failed") {
@@ -3856,6 +3860,21 @@ const deveagentPlugin: PluginModule = {
         // Hermes fires on a counter rather than session end (long sessions never
         // end), and on a clean finish rather than mid-task (a half-done turn
         // would capture half-done work).
+        // Q5/E-3: the fallback used to exist only as this event -> a toast.
+        // Persist it to the workspace ledger so "the model was switched" stays
+        // queryable after a refresh, a crash, or a week.
+        if (evt?.type === "session.provider-fallback") {
+          const props = (evt.properties ?? {}) as Record<string, unknown>
+          void recordProviderFallback(workspaceDirectory, {
+            sessionID: typeof props.sessionID === "string" ? props.sessionID : undefined,
+            failedProviderID: String(props.failedProviderID ?? ""),
+            failedModelID: String(props.failedModelID ?? ""),
+            fallbackProviderID: String(props.fallbackProviderID ?? ""),
+            fallbackModelID: String(props.fallbackModelID ?? ""),
+            fallbackPaid: props.fallbackPaid === true,
+            message: typeof props.message === "string" ? props.message : undefined,
+          })
+        }
         if (evt?.type === "session.idle") {
           const sessionID = evt.properties?.sessionID as string | undefined
           if (sessionID) {
@@ -4637,9 +4656,13 @@ const deveagentPlugin: PluginModule = {
               id: member.id,
               name: member.name,
               attempts,
-              status: error ? "failed" : "completed",
+              // fail-closed: a member that produced neither a result nor an
+              // error is UNKNOWN, not completed. completeTeamRun already treats
+              // "unknown" as a failure; until now nothing ever wrote it, so an
+              // unaccounted member silently counted as a success.
+              status: error ? "failed" : result === undefined || result === null ? "unknown" : "completed",
               childSessionID: teamChildSessionID(result),
-              error,
+              error: error ?? (result === undefined || result === null ? "Member produced no terminal result." : undefined),
               ...usage[index],
             }))
             for (const phase of [synthesisRun, executorRun]) {
@@ -4652,7 +4675,18 @@ const deveagentPlugin: PluginModule = {
                 existing.attempts += member.attempts
                 existing.childSessionID = member.childSessionID ?? existing.childSessionID
                 existing.error = member.error ?? existing.error
-                existing.status = member.status === "failed" || member.error ? "failed" : member.status ?? existing.status
+                // A later phase must never upgrade an earlier phase's failure.
+                // This merge used to take the newer status whenever it was not
+                // "failed", so a synthesis pass reporting "completed" erased an
+                // advisor that had ended unknown/failed — the run row said
+                // failed while its member list said everything was fine.
+                type MemberStatus = "pending" | "running" | "completed" | "failed" | "unknown"
+                const worse = (a: MemberStatus | undefined, b: MemberStatus | undefined): MemberStatus | undefined => {
+                  const rank = (value: MemberStatus | undefined) =>
+                    value === "failed" ? 3 : value === "unknown" ? 2 : value === "completed" ? 1 : 0
+                  return rank(b) > rank(a) ? b : a
+                }
+                existing.status = worse(existing.status, member.status)
                 existing.tokens = (existing.tokens ?? 0) + (member.tokens ?? 0)
                 existing.cost = (existing.cost ?? 0) + (member.cost ?? 0)
               }
@@ -4691,9 +4725,20 @@ const deveagentPlugin: PluginModule = {
               directory: workspaceDirectory,
               sessionID: context.sessionID,
               taskID: runRecord.id,
-              status: "completed",
-              summary: `Team task completed: ${args.task.slice(0, 1_500)}`,
-              nextAction: executorRun ? "Review the Executor result and verify the changed files." : "Review the advisor synthesis before making changes.",
+              // The progress row must agree with the run it describes. Writing
+              // "completed" unconditionally left the workspace memory claiming
+              // success while the ledger row for the same run said failed.
+              status: runRecord.status === "completed" ? "completed" : runRecord.status === "failed" ? "failed" : "in_progress",
+              summary:
+                runRecord.status === "completed"
+                  ? `Team task completed: ${args.task.slice(0, 1_500)}`
+                  : `Team task ${runRecord.status}: ${args.task.slice(0, 1_400)}${runRecord.stopReason ? `\nReason: ${runRecord.stopReason}` : ""}`,
+              nextAction:
+                runRecord.status === "completed"
+                  ? executorRun
+                    ? "Review the Executor result and verify the changed files."
+                    : "Review the advisor synthesis before making changes."
+                  : "Inspect the failed members on the Agent Board and retry or re-dispatch.",
             })
             return JSON.stringify({
               runMode: dispatch.runMode,
@@ -4733,10 +4778,23 @@ const deveagentPlugin: PluginModule = {
         }),
 
         "goal-verify": tool({
-          description: "Verify if the current goal is met.",
+          description:
+            "Verify if the current goal is met. A met=true claim must cite evidence per criterion: pass at least one {criterion, kind, value} entry for EVERY criterion. A `file` citation is checked against the workspace (it must exist and be non-empty); `command`/`test` citations are recorded as claims but are not re-run, so they cannot confirm a criterion on their own. A claim without verified evidence is NOT accepted as verified.",
           args: {
             met: tool.schema.boolean().describe("Whether the goal is met"),
             reason: tool.schema.optional(tool.schema.string()).describe("Verification reason"),
+            evidence: tool.schema
+              .optional(
+                tool.schema.array(
+                  tool.schema.object({
+                    criterion: tool.schema.number().describe("1-based index of the acceptance criterion this supports"),
+                    kind: tool.schema.string().describe('One of "file", "command", "test"'),
+                    value: tool.schema.string().describe("Workspace-relative file path, command line, or test name"),
+                    note: tool.schema.optional(tool.schema.string()).describe("Optional note; never treated as proof"),
+                  }),
+                ),
+              )
+              .describe("Concrete evidence for the completion claim. Required when met=true."),
           },
           execute: async (args, context) => {
             // ponytail: independent verifier (Plan.2026.7.29 §3) — the agent that
@@ -4747,9 +4805,18 @@ const deveagentPlugin: PluginModule = {
             // to verified. Fail-soft: no verifier configured or verifier error
             // leaves the claim untouched, so a broken verifier never blocks a run.
             let verification: IndependentVerification | undefined
+            // R7: the evidence gate is the second opinion that ALWAYS exists. A
+            // configured verifier is optional (it needs an aux model), so without
+            // this the agent's bare `met: true` was the only judge by default.
+            let evidenceGate: GoalEvidenceResult | undefined
             if (args.met) {
               const goal = getGoal(context.sessionID)
               if (goal.active && goal.status === "in_progress" && goal.criteria.length > 0) {
+                evidenceGate = verifyGoalEvidence({
+                  directory: workspaceDirectory,
+                  criteria: goal.criteria,
+                  evidence: (args.evidence ?? []) as GoalEvidenceInput[],
+                })
                 // P0-2 fail-closed: only a verifier that was actually configured
                 // may gate the claim; its absence-of-answer is handled below.
                 const verifierConfigured = !!loadVerifierConfig(workspaceDirectory)
@@ -4795,19 +4862,34 @@ const deveagentPlugin: PluginModule = {
               }
             }
             const verdict = verification?.available ? verification : undefined
-            const rejected = verdict ? !verdict.allMet : false
-            const rejectedDetail = rejected
+            const verifierRejected = verdict ? !verdict.allMet : false
+            const rejectedDetail = verifierRejected
               ? verdict!.perCriterion
                   .filter((item) => !item.met)
                   .map((item) => `criterion ${item.index}${item.reason ? ` (${item.reason})` : ""}`)
                   .join("; ")
               : ""
-            const effectiveReason = rejected ? `Independent verifier rejected the claim: ${rejectedDetail}` : args.reason
+            // The evidence gate can only DOWNGRADE a claim, never upgrade one: a
+            // claim with verified artifacts still has to satisfy a configured
+            // independent verifier, but a claim with no verified artifacts is
+            // refused even when no verifier exists to object (R7).
+            //
+            // The rule itself lives in decideGoalClaim so this tool and the
+            // gated HTTP entry point cannot drift apart.
+            const decision = decideGoalClaim({
+              met: args.met,
+              reason: args.reason,
+              verifier: verdict ? { allMet: verdict.allMet, rejectedDetail } : undefined,
+              evidence: evidenceGate,
+            })
+            const rejected = !decision.accepted
+            const effectiveReason = decision.reason
             const result = verifyGoal({
               ...args,
-              met: rejected ? false : args.met,
+              met: decision.accepted,
               reason: effectiveReason,
               sessionID: context.sessionID,
+              source: "agent",
             })
             if (result.active) {
               await writeDeveAgentMemoryProgress({
@@ -4821,6 +4903,7 @@ const deveagentPlugin: PluginModule = {
                   verification?.available
                     ? `Independent verifier (${loadVerifierConfig(workspaceDirectory)?.model ?? "unknown"}): ${verification.allMet ? "confirmed" : "rejected"} — ${verification.perCriterion.map((item) => `${item.index}${item.met ? "+" : "-"}`).join(" ")}`
                     : "",
+                  evidenceGate ? `Evidence gate: ${evidenceGate.ok ? "passed" : "failed"} — ${summarizeGoalEvidence(evidenceGate)}` : "",
                 ]
                   .filter(Boolean)
                   .join("\n"),
@@ -4841,7 +4924,10 @@ const deveagentPlugin: PluginModule = {
                   verification?.available
                     ? `Independent verifier: confirmed all ${verification.perCriterion.length} criteria (${loadVerifierConfig(workspaceDirectory)?.model ?? "unknown"})`
                     : "Independent verifier: not configured",
-                ].join("\n"),
+                  evidenceGate ? `Evidence: ${summarizeGoalEvidence(evidenceGate)}` : "",
+                ]
+                  .filter(Boolean)
+                  .join("\n"),
               })
             }
             return JSON.stringify(
@@ -4851,6 +4937,16 @@ const deveagentPlugin: PluginModule = {
                   ? verification.available
                     ? { verdict: verification.allMet ? "confirmed" : "rejected", perCriterion: verification.perCriterion, rationale: verification.rationale }
                     : { verdict: "unavailable" }
+                  : undefined,
+                evidence: evidenceGate
+                  ? {
+                      verdict: evidenceGate.ok ? "confirmed" : "rejected",
+                      reason: evidenceGate.reason,
+                      uncoveredCriteria: evidenceGate.uncoveredCriteria,
+                      machineVerified: evidenceGate.machineVerifiedCount,
+                      claims: evidenceGate.claimCount,
+                      perCriterion: evidenceGate.perCriterion,
+                    }
                   : undefined,
               },
               null,
@@ -4940,7 +5036,7 @@ const deveagentPlugin: PluginModule = {
 
         "skill-save": tool({
           description:
-            "Save a reusable procedure as a skill for future sessions. Use when a task revealed a repeatable workflow worth reusing (build steps, a debugging sequence, a project convention). Do NOT save one-off narratives, environment failures, or unresolved problems. Prefer updating an existing skill over creating a near-duplicate.",
+            "Save a reusable procedure as a skill for future sessions. Use when a task revealed a repeatable workflow worth reusing (build steps, a debugging sequence, a project convention). Do NOT save one-off narratives, environment failures, or unresolved problems. Prefer updating an existing skill over creating a near-duplicate. NOTE: this writes the skill to the workspace staging area (.deveagent/skills) only. Nothing loads that directory yet, so the skill is NOT active and will NOT be injected into this or any later session; it becomes usable only after a separate review wires it into a load path.",
           args: {
             name: tool.schema.string().describe("Short kebab-case name (e.g. collapse-duplicate-logs)"),
             description: tool.schema.string().describe("One line, max 60 chars — it becomes the skill index entry"),
@@ -4957,14 +5053,27 @@ const deveagentPlugin: PluginModule = {
               // A successful write resets the self-improvement counter: the
               // reviewer just did its job, so it should not immediately re-fire.
               autoSkillItersBySession.set(context.sessionID, 0)
-              return JSON.stringify({ saved: true, name: result.name, path: result.path })
+              // The write is real, the ACTIVATION is not: `.deveagent/skills` is
+              // not on any load path (loadLocalSkills reads
+              // ~/.config/opencode/local-skills; SKILL_DIRS reads ~/.hermes and
+              // ~/.codex). `saved: true` alone read as "this skill is now
+              // active", so the payload states the staging explicitly. Keep
+              // `active: false` until the load path actually covers this dir.
+              return JSON.stringify({
+                staged: true,
+                saved: true,
+                active: false,
+                name: result.name,
+                path: result.path,
+                note: "Written to the workspace staging area (.deveagent/skills). Not loaded into sessions: no skill loader reads this directory yet, so this skill will not be injected into the current or any future session until it is wired into a load path.",
+              })
             }
-            return JSON.stringify({ saved: false, reason: result.reason })
+            return JSON.stringify({ staged: false, saved: false, active: false, reason: result.reason })
           },
         }),
 
         "skill-doctor": tool({
-          description: "Report which installed skills are unused and how much context each one costs (approximate). Use before adding more skills, or when context feels crowded.",
+          description: "Report the size on disk of each staged skill and how much context it would cost if injected (approximate). Usage is NOT recorded, so this cannot tell you which skills are unused. Use before adding more skills, or when context feels crowded.",
           args: {},
           execute: async () => JSON.stringify(await inspectSkills(input.directory)),
         }),
@@ -6889,6 +6998,21 @@ export async function retryFailedTeamMembers(
     const finished = retryable.map((member, index) => {
       const outcome = settled[index]
       if (outcome.status === "fulfilled") {
+        // runTeamMember never rejects: it reports a failed member as
+        // `{ error }` on a resolved value. Recording "completed" here threw
+        // that error away, so every retried member was reported successful no
+        // matter how its child turn ended.
+        const memberError = outcome.value.error
+        if (memberError) {
+          return {
+            id: member.id,
+            name: member.name,
+            attempts: outcome.value.attempts,
+            childSessionID: teamChildSessionID(outcome.value.result) ?? record.members.find((item) => item.id === member.id)?.childSessionID,
+            status: "failed" as const,
+            error: memberError.slice(0, 200),
+          }
+        }
         return {
           id: member.id,
           name: member.name,
@@ -7064,10 +7188,13 @@ async function recordTeamChildCompletion(
   const member = record.members.find((item) => item.id === memberID)
   if (!member) return
   const usage = taskUsage(outcome.result)
-  member.status = outcome.error ? "failed" : "completed"
+  // Same fail-closed rule as finalMembers: no error and no result is UNKNOWN,
+  // not a success. completeTeamRun treats "unknown" as a failure.
+  const producedNothing = outcome.result === undefined || outcome.result === null
+  member.status = outcome.error ? "failed" : producedNothing ? "unknown" : "completed"
   member.attempts = Math.max(member.attempts, outcome.attempts)
   member.finishedAt = Date.now()
-  member.error = outcome.error
+  member.error = outcome.error ?? (producedNothing ? "Member produced no terminal result." : undefined)
   member.tokens = usage.tokens
   member.cost = usage.cost
   member.input = usage.input
@@ -7162,6 +7289,12 @@ type GoalState = {
   // from a separately-configured aux model. Recorded whenever a claim was
   // checked; absent when no verifier is configured (fail-soft).
   verifier?: GoalVerificationRecord
+  // R7: the last refused completion claim, so the UI can say WHY a claim did
+  // not become verified instead of showing an unchanged in-progress goal.
+  lastVerifyRejection?: { at: number; reason: string }
+  // R7: who verified it. "agent" = went through the evidence gate; "user" =
+  // manually confirmed in the Goal panel (no gate, no verifier).
+  verifiedBy?: "agent" | "user"
 }
 
 export type GoalVerificationRecord = {
@@ -7232,6 +7365,33 @@ function automationDirectory(directory?: string) {
   return typeof directory === "string" && directory.trim() ? path.resolve(directory) : undefined
 }
 
+// A provider turn that fails does NOT reject the prompt promise: the error is
+// attached to the assistant message and the call resolves normally. Every
+// automation driver (goal worker, loop worker, team retry) therefore has to
+// read the turn's terminal state instead of trusting `await` — treating a
+// resolve as success is how a failed attempt gets recorded as completed.
+//
+// `session.prompt` resolves to SessionV1.WithParts, whose `info` is the last
+// assistant message. This reads the error off it in the shapes a host may hand
+// back (a string, or an object carrying `message`/`name`), and returns
+// undefined when the turn genuinely succeeded.
+export function readAutomationTurnError(result: unknown): string | undefined {
+  if (!result || typeof result !== "object") return undefined
+  const info = (result as { info?: unknown }).info
+  if (!info || typeof info !== "object") return undefined
+  const raw = (info as { error?: unknown }).error
+  if (raw === undefined || raw === null) return undefined
+  if (typeof raw === "string") return raw.slice(0, 200) || "Provider turn errored."
+  if (typeof raw === "object") {
+    const message = (raw as { message?: unknown }).message
+    if (typeof message === "string" && message) return message.slice(0, 200)
+    const name = (raw as { name?: unknown }).name
+    if (typeof name === "string" && name) return name.slice(0, 200)
+    return "Provider turn errored."
+  }
+  return String(raw).slice(0, 200) || "Provider turn errored."
+}
+
 function automationDirectoryMatches(value: string | undefined, directory?: string) {
   const expected = automationDirectory(directory)
   return !expected || !value || value === expected
@@ -7290,6 +7450,8 @@ function validPersistedGoal(value: unknown): GoalState | undefined {
     attempts,
     criteriaDone: Array.isArray(raw.criteriaDone) && raw.criteriaDone.length === criteria.length ? raw.criteriaDone.map((flag) => flag === true) : undefined,
     verifier: validPersistedVerification(raw.verifier, criteria.length),
+    lastVerifyRejection: validPersistedRejection(raw.lastVerifyRejection),
+    verifiedBy: raw.verifiedBy === "user" || raw.verifiedBy === "agent" ? raw.verifiedBy : undefined,
   }
 }
 
@@ -7312,6 +7474,17 @@ function validPersistedVerification(value: unknown, criteriaCount: number): Goal
     allMet: perCriterion.every((item) => item.met),
     perCriterion: perCriterion.sort((a, b) => a.index - b.index),
     rationale: typeof raw.rationale === "string" ? raw.rationale.slice(0, 500) : "",
+  }
+}
+
+/** R7: the persisted "why the last completion claim was refused" record. */
+function validPersistedRejection(value: unknown): { at: number; reason: string } | undefined {
+  if (!value || typeof value !== "object") return undefined
+  const raw = value as { at?: unknown; reason?: unknown }
+  if (typeof raw.reason !== "string" || !raw.reason) return undefined
+  return {
+    at: typeof raw.at === "number" && Number.isFinite(raw.at) ? raw.at : Date.now(),
+    reason: raw.reason.slice(0, 400),
   }
 }
 
@@ -7646,6 +7819,11 @@ export async function scanGoalQueueOnce(client: unknown, directory: string) {
         body: {
           noReply: false,
           parts: [{ type: "text", text: `Resume the persisted Goal: ${goal.description}. Continue with the next smallest verifiable step and call goal-verify when complete.` }],
+          // Queue item 3: a Goal's token budget was a soft check AFTER the
+          // turn. Passing it as the session's hard output cap makes the turn
+          // itself bounded: once `budgetTokens` of output+reasoning is spent,
+          // the prompt loop stops before the next provider call.
+          ...(goal.budgetTokens !== undefined ? { maxOutputTokens: goal.budgetTokens } : {}),
         },
       })
       const deadline = remainingMs === undefined
@@ -7657,17 +7835,36 @@ export async function scanGoalQueueOnce(client: unknown, directory: string) {
               reject(new Error("Goal wall-clock budget exhausted."))
             }, remainingMs)
           })
-      await (deadline ? Promise.race([promptRun, deadline]) : promptRun)
+      const promptResult = await (deadline ? Promise.race([promptRun, deadline]) : promptRun)
       leaseOwned = await lease.owns()
       const current = goalStateBySession.get(item.sessionID)
       if (leaseOwned && current === goal && current.active && current.status === "in_progress") {
         // The provider may have called goal-verify during this request. Re-read
         // the map before committing scheduler state so verified/failed goals
         // cannot be resurrected by the worker's stale snapshot.
-        finishGoalAttempt(item.sessionID, "completed")
-        current.nextAttemptAt = undefined
-        current.retryCount = 0
-        current.lastError = undefined
+        //
+        // A resolved prompt is NOT a successful attempt: a provider failure is
+        // attached to the assistant message and the promise still resolves. It
+        // must not reset retryCount/lastError, or a failing goal looks healthy
+        // and retries forever without an honest error.
+        const turnError = readAutomationTurnError(promptResult)
+        if (turnError) {
+          finishGoalAttempt(item.sessionID, "failed")
+          current.lastError = turnError
+          current.retryCount = (current.retryCount ?? 0) + 1
+          if (current.retryCount >= GOAL_MAX_RETRIES) {
+            current.status = "failed"
+            current.stopReason = `Goal attempt failed ${current.retryCount} times: ${turnError}`
+            current.nextAttemptAt = undefined
+          } else {
+            current.nextAttemptAt = Date.now() + goalBackoffMs(current.retryCount)
+          }
+        } else {
+          finishGoalAttempt(item.sessionID, "completed")
+          current.nextAttemptAt = undefined
+          current.retryCount = 0
+          current.lastError = undefined
+        }
       }
     } catch (error) {
       leaseOwned = await lease.owns()
@@ -7900,9 +8097,16 @@ export function reserveGoalReentry(sessionID?: string) {
   const goal = goalStateBySession.get(goalKey(sessionID))
   if (!goal?.active || goal.status !== "in_progress") return false
   if (goal.reentries >= goal.maxReentries) {
-    finishGoalAttempt(sessionID, "failed", "Goal re-entry budget exhausted.")
+    // The re-entry budget and the retry budget are two different limits, and
+    // re-entry is always the one that runs out first (8 vs 12). Ending here
+    // used to report only "budget exhausted", which hides WHY the goal never
+    // finished: a goal that burned every continuation on provider errors read
+    // the same as one that simply needed more turns. Carry the last error into
+    // the stop reason so the failure path is visible.
+    const detail = goal.lastError ? ` Last error: ${goal.lastError}` : ""
+    finishGoalAttempt(sessionID, "failed", `Goal re-entry budget exhausted.${detail}`)
     goal.status = "failed"
-    goal.stopReason = "Goal re-entry budget exhausted."
+    goal.stopReason = `Goal re-entry budget exhausted.${detail}`
     recordGoalRunEnd(goal, sessionID, "failed", goal.stopReason)
     void saveGoalsToDisk().catch(() => undefined)
     return false
@@ -7960,7 +8164,18 @@ export function toggleGoalCriterion(sessionID: string | undefined, index: number
   }
   goal.criteriaDone[index] = done
   if (goal.criteriaDone.every((flag) => flag)) {
-    const verified = verifyGoal({ sessionID, met: true, reason: "all criteria checked" })
+    // Checking every box is a USER decision, so it still verifies the goal —
+    // the human is the final authority and must not be locked out of their own
+    // task. But the reason records that this was a manual confirmation with no
+    // evidence gate and no independent verifier, so the ledger and Memory never
+    // present it as a checked completion. (The agent path is goal-verify, which
+    // does go through the gate.)
+    const verified = verifyGoal({
+      sessionID,
+      met: true,
+      source: "user",
+      reason: "Manually confirmed by the user in the Goal panel (no evidence gate, no independent verifier).",
+    })
     void saveGoalsToDisk().catch(() => undefined)
     return verified
   }
@@ -8024,12 +8239,90 @@ export function markGoalVerifyUnavailable(sessionID: string) {
   return getGoal(sessionID)
 }
 
-export function verifyGoal(input: { met: boolean; reason?: string; sessionID?: string }) {
-  const sessionID = goalKey(input.sessionID)
+/**
+ * R7: the single decision rule for a completion claim.
+ *
+ * Both the goal-verify tool and the gated HTTP entry point must reach the same
+ * verdict, so the rule lives here once instead of being re-derived at each call
+ * site (two copies had already started to drift). The gate can only DOWNGRADE:
+ * passing it verifies nothing by itself, and a configured independent verifier
+ * still has to agree. A verifier rejection wins the reason because its
+ * per-criterion detail is more useful than "no evidence".
+ */
+export function decideGoalClaim(input: {
+  met: boolean
+  reason?: string
+  verifier: { allMet: boolean; rejectedDetail: string } | undefined
+  evidence: GoalEvidenceResult | undefined
+}): { accepted: boolean; reason?: string } {
+  if (!input.met) return { accepted: false, reason: input.reason }
+  const verifierRejected = input.verifier ? !input.verifier.allMet : false
+  if (verifierRejected) {
+    return { accepted: false, reason: `Independent verifier rejected the claim: ${input.verifier!.rejectedDetail}` }
+  }
+  if (input.evidence && !input.evidence.ok) return { accepted: false, reason: input.evidence.reason }
+  return { accepted: true, reason: input.reason }
+}
+
+/**
+ * R7: the gated entry point for an agent completion claim.
+ *
+ * Every non-user path must come through here, so the evidence gate cannot be
+ * side-stepped by reaching a lower-level function (the HTTP route used to call
+ * `verifyGoal` directly, which was a second, ungated way to mark a goal
+ * verified).
+ */
+export function verifyGoalWithEvidence(input: {
+  met: boolean
+  reason?: string
+  sessionID?: string
+  evidence: GoalEvidenceInput[]
+}) {
+  const goal = getGoal(input.sessionID)
+  const gated = input.met && goal.active && goal.status === "in_progress" && goal.criteria.length > 0
+  const gate = gated ? verifyGoalEvidence({ directory: goal.directory, criteria: goal.criteria, evidence: input.evidence }) : undefined
+  const decision = decideGoalClaim({ met: input.met, reason: input.reason, verifier: undefined, evidence: gate })
+  const result = verifyGoal({
+    met: decision.accepted,
+    reason: decision.reason,
+    sessionID: input.sessionID,
+    source: "agent",
+  })
+  return {
+    ...result,
+    evidence: gate
+      ? {
+          verdict: gate.ok ? "confirmed" : "rejected",
+          reason: gate.reason,
+          uncoveredCriteria: gate.uncoveredCriteria,
+          machineVerified: gate.machineVerifiedCount,
+          claims: gate.claimCount,
+          perCriterion: gate.perCriterion,
+        }
+      : undefined,
+  }
+}
+
+export function verifyGoal(input: { met: boolean; reason?: string; sessionID?: string; source?: "agent" | "user" }) {  const sessionID = goalKey(input.sessionID)
   const goal = goalStateBySession.get(sessionID)
   if (!goal?.active) return { ...EMPTY_GOAL }
   if (goal.status !== "in_progress") return { ...goal }
+  // R7: a completion claim records WHO made it. The agent's claim goes through
+  // the evidence gate (`verifyGoalWithEvidence`); the user checking every box in
+  // the Goal panel is the human's own decision and is allowed to stand, but it
+  // is labelled manual so nothing downstream presents it as a checked
+  // completion. An unlabelled caller is treated as the agent (the stricter
+  // path) — fail-closed rather than trusting an unknown caller.
+  goal.verifiedBy = input.met ? (input.source ?? "agent") : goal.verifiedBy
   goal.status = input.met ? "verified" : "in_progress"
+  // A refused claim must leave a trace. Without this the reason a completion
+  // claim was not accepted (evidence gate or independent verifier) existed only
+  // in the tool result, so the status bar showed an unchanged "in progress"
+  // goal with no way to tell a rejected claim from no attempt at all.
+  if (!input.met && input.reason) {
+    goal.lastError = input.reason.slice(0, 400)
+    goal.lastVerifyRejection = { at: Date.now(), reason: goal.lastError }
+  }
   if (input.met) {
     finishGoalAttempt(input.sessionID, "completed")
     goal.verifiedAt = Date.now()
@@ -8412,8 +8705,8 @@ export function getLoopQueue(directory?: string) {
 
 /**
  * Real session usage for automation budgets — read from the session record
- * (provider-returned tokens/cost the core already persists). Returns {}
- * when the session exposes no numbers: budgets never estimate.
+ * (provider-returned tokens/cost the core already persists). Marks incomplete
+ * readings unavailable rather than estimating missing dimensions.
  */
 async function automationBudgetBreach(
   client: unknown,
@@ -8437,15 +8730,18 @@ async function automationBudgetBreach(
     }
     if (budget.budgetTokens !== undefined) {
       const t = tokens as Record<string, unknown>
-      const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0)
       const cache = (t.cache ?? {}) as Record<string, unknown>
-      const total = num(t.input) + num(t.output) + num(t.reasoning) + num(cache.read) + num(cache.write)
+      const dimensions = [t.input, t.output, t.reasoning, cache.read, cache.write]
+      if (!dimensions.every((value) => typeof value === "number" && Number.isFinite(value) && value >= 0)) {
+        return { readable: false }
+      }
+      const total = (dimensions as number[]).reduce((sum, value) => sum + value, 0)
       if (total >= budget.budgetTokens) {
         return { breach: `Token 预算已用尽（${total}/${budget.budgetTokens}）；成本未返回`, readable: true }
       }
     }
     if (budget.budgetCostUsd !== undefined) {
-      if (!(typeof cost === "number" && Number.isFinite(cost))) {
+      if (!(typeof cost === "number" && Number.isFinite(cost) && cost >= 0)) {
         return { readable: false }
       }
       if (cost >= budget.budgetCostUsd) {
@@ -8475,14 +8771,15 @@ export async function scanLoopQueueOnce(client: unknown, directory: string) {
     // Budget gate: checked on every tick for every running automation —
     // BEFORE the ready/interval check, so a breach pauses the loop even when
     // its next scheduled run is hours away. A breach pauses (resumable) with
-    // the real numbers; unreadable usage never blocks the run.
+    // the real numbers. An unreadable enforced budget also pauses admission:
+    // output caps alone cannot bound unknown input usage or provider costs.
     if (item.status === "running") {
-      const { breach } = await automationBudgetBreach(client, item.sessionID, workspaceDirectory, loopStateBySession.get(item.sessionID) ?? item)
-      if (breach) {
+      const { breach, readable } = await automationBudgetBreach(client, item.sessionID, workspaceDirectory, loopStateBySession.get(item.sessionID) ?? item)
+      if (breach || !readable) {
         const pausedLoop = loopStateBySession.get(item.sessionID)
         if (pausedLoop) {
           pausedLoop.status = "paused"
-          pausedLoop.stopReason = breach
+          pausedLoop.stopReason = breach ?? "Budget usage is unavailable; paused before starting another Loop pass."
           pausedLoop.nextRunAt = undefined
           await saveLoopsToDisk().catch(() => undefined)
         }
@@ -8535,6 +8832,9 @@ export async function scanLoopQueueOnce(client: unknown, directory: string) {
             type: "text",
             text: `Run ${loop.runCount + 1}/${loop.maxRuns} of the persisted Loop task: ${loop.task}\nPerform one bounded pass, report the result, and do not widen scope or escalate permissions.`,
           }],
+          // Same hard cap as the goal worker: budgetTokens bounds THIS pass,
+          // so an unbounded loop run is cut at the prompt layer, not after it.
+          ...(loop.budgetTokens !== undefined ? { maxOutputTokens: loop.budgetTokens } : {}),
         },
       })
       let deadlineTimer: ReturnType<typeof setTimeout> | undefined
@@ -8548,24 +8848,44 @@ export async function scanLoopQueueOnce(client: unknown, directory: string) {
               void cancel?.().catch(() => undefined)
             }, remainingMs)
           })
+      let turnResult: unknown
       try {
-        await (deadline ? Promise.race([promptRun, deadline]) : promptRun)
+        turnResult = await (deadline ? Promise.race([promptRun, deadline]) : promptRun)
       } finally {
         if (deadlineTimer) clearTimeout(deadlineTimer)
       }
       leaseOwned = await lease.owns()
       if (leaseOwned && loopStateBySession.get(item.sessionID) === loop && loop.active) {
-        loop.runCount += 1
-        loop.retryCount = 0
-        loop.lastError = undefined
-        if (loop.runCount >= loop.maxRuns) {
-          loop.active = false
-          loop.status = "completed"
-          loop.completedAt = Date.now()
-          loop.nextRunAt = undefined
-          void recordLoopRun(loop, item.sessionID, "completed", { finishedAt: loop.completedAt })
+        // A resolved prompt is not a successful pass: a provider failure is
+        // attached to the assistant message and the promise still resolves.
+        // Counting it would spend a run from the budget and could march a
+        // failing loop to "completed" without ever having worked.
+        const turnError = readAutomationTurnError(turnResult)
+        if (turnError) {
+          loop.retryCount += 1
+          loop.lastError = turnError
+          if (loop.retryCount > loop.maxRetries) {
+            loop.active = false
+            loop.status = "failed"
+            loop.stopReason = `Loop pass failed ${loop.retryCount} times: ${turnError}`
+            loop.nextRunAt = undefined
+            await recordLoopRun(loop, item.sessionID, "failed", { stopReason: loop.stopReason, finishedAt: Date.now() })
+          } else {
+            loop.nextRunAt = Date.now() + loopBackoffMs(loop.retryCount)
+          }
         } else {
-          loop.nextRunAt = nextLoopRunAt(loop, Date.now())
+          loop.runCount += 1
+          loop.retryCount = 0
+          loop.lastError = undefined
+          if (loop.runCount >= loop.maxRuns) {
+            loop.active = false
+            loop.status = "completed"
+            loop.completedAt = Date.now()
+            loop.nextRunAt = undefined
+            void recordLoopRun(loop, item.sessionID, "completed", { finishedAt: loop.completedAt })
+          } else {
+            loop.nextRunAt = nextLoopRunAt(loop, Date.now())
+          }
         }
       }
     } catch (error) {
@@ -8910,26 +9230,38 @@ async function runTeamMember(
           if (typeof jobID !== "string" || !jobID) throw new Error("Native background TaskTool did not return a job ID.")
           await onStarted?.(teamChildSessionID(started), jobID, attempt)
           const waited = await taskRunner.waitTask({ jobID, timeout_ms: input.timeout_ms })
-          // A child task that failed does not always fail the JOB: TaskTool
-          // reports the child's error as output text (state="error"). A member
-          // whose run actually failed must not be recorded as completed.
-          const waitedOutput = (waited as { output?: unknown } | undefined)?.output
-          if (typeof waitedOutput === "string" && /<task id="[^"]+" state="error">/.test(waitedOutput)) {
-            const detail = waitedOutput.replace(/<\/?task[^>]*>|<\/?task_error>|<\/?summary>/g, " ").replace(/\s+/g, " ").trim()
-            throw new Error(detail.slice(0, 200) || "Child task ended with an error state.")
-          }
+          // No output sniffing here. The `<task id="..." state="error">` tag is
+          // only ever produced by renderOutput for injectBackgroundResult (a
+          // notice sent to the PARENT session); a failing child surfaces as a
+          // failed waitTask (the seam reads the child's last assistant message)
+          // or as a failed job status. A regex on the tag could never match.
           appendGuardianTrace(teamMemberTraceDirectory(), { kind: "team-member-waited", member: member.id, outputTag: String((waited as { output?: unknown })?.output ?? "").slice(0, 60), attempt })
           return { result: waited, attempts: attempt }
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error)
-          // Existing OpenCode installs may not enable native background subagents.
-          // Fall back before a child is created; do not pretend it is recoverable.
-          if (!message.includes("Background subagents require")) {
+          // Existing OpenCode installs may not enable native background
+          // subagents. Fall back to a foreground child ONLY for that specific
+          // condition — detected by class, not by matching the message text.
+          // The old `message.includes("Background subagents require")` check
+          // would also send any unrelated failure carrying that phrase down the
+          // foreground path, and a real child failure (ChildTurnError) had to
+          // rely on its text not colliding with it.
+          const backgroundUnavailable =
+            error instanceof BackgroundSubagentsUnavailableError ||
+            (error as { backgroundSubagentsUnavailable?: unknown } | null)?.backgroundSubagentsUnavailable === true
+          if (!backgroundUnavailable) {
             // The runner seam has no abort: a waitTask timeout leaves the
             // child session running. Say so instead of reporting a plain
             // failure that implies the work stopped.
             const timedOut = /timeout|timed out/i.test(message)
-            throw new Error(timedOut ? `${message} (background child may still be running; no abort API on the task runner)` : message)
+            const childFailed = error instanceof ChildTurnError || (error as { childTurnError?: unknown } | null)?.childTurnError === true
+            throw new Error(
+              childFailed
+                ? message
+                : timedOut
+                  ? `${message} (background child may still be running; no abort API on the task runner)`
+                  : message,
+            )
           }
         }
       }
@@ -8939,12 +9271,10 @@ async function runTeamMember(
       const foregroundResult = await taskRunner.runTask(input)
       const foregroundOutput = (foregroundResult as { output?: unknown })?.output
       appendGuardianTrace(teamMemberTraceDirectory(), { kind: "team-member-foreground", member: member.id, outputTag: String(foregroundOutput ?? "").slice(0, 60), attempt })
-      // The foreground TaskTool reports a failed child as error-tagged output
-      // (state="error") instead of throwing; that must be a member failure.
-      if (typeof foregroundOutput === "string" && /<task id="[^"]+" state="error">/.test(foregroundOutput)) {
-        const detail = foregroundOutput.replace(/<\/?task[^>]*>|<\/?task_error>|<\/?summary>/g, " ").replace(/\s+/g, " ").trim()
-        throw new Error(detail.slice(0, 200) || "Child task ended with an error state.")
-      }
+      // A failed foreground child rejects (TaskTool.runTask fails on an errored
+      // assistant message), so reaching here means the turn produced a result.
+      // The old state="error" output check was unreachable: that tag is only
+      // written when notifying the parent session about a background job.
       return { result: foregroundResult, attempts: attempt }
     } catch (error) {
       lastError = error instanceof Error ? error.message : String(error)
@@ -9083,7 +9413,7 @@ export async function checkRemoteSkillUpdates(input: { directory?: string }): Pr
   return results
 }
 
-export async function updateRemoteSkill(input: { id: string; directory?: string }): Promise<{ id: string; updated: boolean; error?: string }> {
+export async function updateRemoteSkill(input: { id: string; directory?: string }): Promise<{ id: string; updated: boolean; changed?: boolean; error?: string }> {
   const id = safeRemoteSkillID(input.id, "")
   if (!id) return { id: input.id || "unknown", updated: false, error: "Invalid remote Skill ID." }
   const manifest = await readRemoteSkillManifest(input.directory)
@@ -9091,10 +9421,8 @@ export async function updateRemoteSkill(input: { id: string; directory?: string 
   if (!entry) return { id, updated: false, error: "No install source recorded for this Skill. Reinstall it from the market once." }
   const result = await installRemoteSkill({ url: entry.url, id, directory: input.directory })
   if (result.error) return { id, updated: false, error: result.error }
-  const now = new Date().toISOString()
-  manifest[id] = { ...entry, hash: result.hash ?? entry.hash, updatedAt: now }
-  await writeRemoteSkillManifest(input.directory, manifest)
-  return { id, updated: result.changed !== false }
+  // The installer owns provenance; rewriting this stale snapshot can lose other installs.
+  return { id, updated: true, changed: result.changed }
 }
 
 function safeRemoteSkillID(value: string | undefined, fallback: string): string | undefined {

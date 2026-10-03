@@ -26,6 +26,7 @@ import { Schema } from "effect"
 import z from "zod"
 import { Plugin } from "../plugin"
 import { Provider } from "@/provider/provider"
+import { ChildTurnError } from "./task-errors"
 
 import { WebSearchTool } from "./websearch"
 import { LspTool } from "./lsp"
@@ -181,14 +182,18 @@ export const layer = Layer.effect(
                         if (childID) {
                           const recent = yield* sessions.messages({ sessionID: SessionID.make(childID), limit: 3 })
                           const lastAssistant = [...recent].reverse().find((message) => message.info.role === "assistant")
-                          // The error lives on the runtime assistant message but
-                          // is not part of the serialized Info schema.
+                          // The error IS part of the serialized Info schema
+                          // (core/src/v1/session.ts), and MessageUpdated is a
+                          // synchronized event, so the projector persists it in
+                          // the same transaction. The old comment claiming
+                          // otherwise was wrong and led to the error being read
+                          // as an untyped marker.
                           const childError = (lastAssistant?.info as { error?: unknown } | undefined)?.error
                           if (childError) {
                             const message = typeof childError === "string"
                               ? childError
                               : ((childError as { message?: unknown }).message as string | undefined) ?? "Child session turn errored"
-                            return yield* Effect.fail(Object.assign(new Error(message.slice(0, 200)), { childTurnError: true }))
+                            return yield* Effect.fail(new ChildTurnError(message.slice(0, 200)))
                           }
                         }
                         return {

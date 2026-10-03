@@ -24,6 +24,9 @@ type GoalState = {
   startedAt?: number
   verifiedAt?: number
   attempts?: Array<{ status?: "running" | "completed" | "failed" | "interrupted" }>
+  /** R7: why the last completion claim was refused (evidence gate / verifier). */
+  lastVerifyRejection?: { at: number; reason: string }
+  lastError?: string
 }
 type GoalDraftState = { active: boolean; description?: string; createdAt?: number }
 type LoopState = {
@@ -347,7 +350,7 @@ export function DeveagentStatusBar(props: { showTerminalToggle?: boolean } = {})
       />
       <StatusMetric dataAction="deveagent-statusbar-cache" glyph="⚡" label={language.t("deveagent.statusbar.cacheHit")} value={sessionMetrics.hasUsage() ? `${cacheHitRate()}%` : "--"} tone="base" />
       <StatusMetric dataAction="deveagent-statusbar-tokens" glyph="∑" label="Tokens" value={sessionMetrics.hasUsage() ? number().format(sessionMetrics.sessionTotalTokens()) : "--"} tone="base" />
-      <StatusMetric dataAction="deveagent-statusbar-cost" glyph="$" label={language.t("deveagent.statusbar.cost")} value={costLabel()} tone="base" />
+      <StatusMetric dataAction="deveagent-statusbar-cost" dataComponent="deveagent-statusbar-cost-value" glyph="$" label={language.t("deveagent.statusbar.cost")} value={costLabel()} tone="base" />
       <StatusMetric dataAction="deveagent-statusbar-rounds" glyph="↻" label={language.t("deveagent.statusbar.rounds")} value={number().format(sessionMetrics.rounds())} tone="base" />
       <Show when={compactingElapsed()}>
         <span class="shrink-0 text-v2-state-fg-warning" title={language.t("deveagent.statusbar.compactionRunning")}>
@@ -389,9 +392,9 @@ export function DeveagentStatusBar(props: { showTerminalToggle?: boolean } = {})
           ⛨ {language.t("deveagent.statusbar.untrustedProject")}
         </button>
       </Show>
-      <span class="flex shrink-0 items-center gap-1" title={`${language.t("deveagent.statusbar.mode")}: ${composer.snapshot().mode}`}>
+      <span class="flex shrink-0 items-center gap-1" title={`${language.t("deveagent.statusbar.mode")}: ${composer.snapshot().mode}`} data-component="deveagent-statusbar-mode">
         <span class="text-v2-text-text-faint select-none" aria-hidden="true">◈</span>
-        <span class="text-v2-text-text-base">{composer.snapshot().mode}</span>
+        <span data-component="deveagent-statusbar-mode-value" class="text-v2-text-text-base">{composer.snapshot().mode}</span>
       </span>
       <Show when={composer.snapshot().permissionMode !== "default"}>
         <span class="flex shrink-0 items-center gap-1" title={`${language.t("deveagent.statusbar.permission")}: ${permissionLabel()}`}>
@@ -400,7 +403,7 @@ export function DeveagentStatusBar(props: { showTerminalToggle?: boolean } = {})
         </span>
       </Show>
       <Show when={goal()?.active && goal()?.startedAt}>
-        <span class="flex items-center gap-1 shrink-0 rounded bg-v2-background-bg-accent/10 px-1.5 py-0.5 text-v2-text-text-accent">
+        <span class="flex items-center gap-1 shrink-0 rounded px-1.5 py-0.5 text-v2-text-text-inverse [background-color:var(--v2-text-text-accent)]">
           <span class="max-w-[180px] truncate" title={`${goal()?.status ?? ""} · ${goal()?.description ?? ""}`}>
             {goalLabel()}: {goal()?.description}
           </span>
@@ -423,6 +426,20 @@ export function DeveagentStatusBar(props: { showTerminalToggle?: boolean } = {})
             </span>
             <Show when={goalAttemptLabel()}>
               <span class="text-[9px] opacity-80">{goalAttemptLabel()}</span>
+            </Show>
+            {/* R7: a refused completion claim must be visible. Without this the
+                goal simply stayed "in progress", so a rejected claim looked
+                identical to no attempt at all — and the reason (evidence gate
+                or independent verifier) was only ever in the tool result. */}
+            <Show when={goal()?.lastVerifyRejection}>
+              <span
+                class="shrink-0 rounded px-1 text-[9px] font-medium"
+                style={{ background: "var(--v2-state-bg-danger)", color: "var(--v2-state-fg-danger)" }}
+                title={goal()!.lastVerifyRejection!.reason}
+                data-component="deveagent-statusbar-goal-rejected"
+              >
+                {language.t("deveagent.statusbar.goalVerifyRejected")}
+              </span>
             </Show>
             <button
               type="button"
@@ -463,7 +480,7 @@ export function DeveagentStatusBar(props: { showTerminalToggle?: boolean } = {})
         </span>
       </Show>
       <Show when={loop()?.active}>
-        <span class="flex items-center gap-1 shrink-0 rounded bg-v2-background-bg-accent/10 px-1.5 py-0.5 tabular-nums text-v2-text-text-accent">
+        <span class="flex items-center gap-1 shrink-0 rounded px-1.5 py-0.5 tabular-nums text-v2-text-text-inverse [background-color:var(--v2-text-text-accent)]">
           <span class="max-w-[180px] truncate" title={loop()?.task}>
             Loop {loop()?.status} {loop()?.runCount ?? 0}/{loop()?.maxRuns ?? 8}: {loop()?.task}
           </span>
@@ -550,7 +567,7 @@ export function DeveagentStatusBar(props: { showTerminalToggle?: boolean } = {})
           </KbPopover.Content>
         </KbPopover.Portal>
       </KbPopover>
-      <span class="ml-auto min-w-0 max-w-52 truncate text-v2-text-text-muted" title={`${providerLabel()} / ${modelLabel()}`}>
+      <span data-component="deveagent-statusbar-model" class="ml-auto min-w-0 max-w-52 truncate text-v2-text-text-muted" title={`${providerLabel()} / ${modelLabel()}`}>
         {modelLabel()}
       </span>
     </div>
@@ -562,7 +579,7 @@ export function DeveagentStatusBar(props: { showTerminalToggle?: boolean } = {})
 // single calm line instead of a wall of "Label value · Label value".
 // Hierarchy inside one chip: glyph faintest, value in the base tone and one
 // weight up, so the numbers — not the punctuation — are what the eye lands on.
-function StatusMetric(props: { glyph: string; label: string; value: string; tone: "success" | "warning" | "danger" | "base"; dataAction?: string }) {
+function StatusMetric(props: { glyph: string; label: string; value: string; tone: "success" | "warning" | "danger" | "base"; dataAction?: string; dataComponent?: string }) {
   const color = () =>
     props.tone === "success"
       ? "var(--v2-state-fg-success)"
@@ -583,6 +600,7 @@ function StatusMetric(props: { glyph: string; label: string; value: string; tone
       {/* Weight is part of the empty/non-empty switch, not a second class that
           would fight the always-on font-medium when both are present. */}
       <span
+        data-component={props.dataComponent}
         class="tabular-nums"
         classList={{ "font-medium": !empty(), "text-v2-text-text-faint font-normal": empty() }}
         style={empty() ? undefined : { color: color() }}

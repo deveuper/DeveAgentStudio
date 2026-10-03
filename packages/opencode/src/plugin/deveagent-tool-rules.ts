@@ -6,6 +6,13 @@
 // Wiring it into `permission.ask` is a separate change; until then it is a
 // self-contained decision engine with tests.
 //
+// STAGED (whole module): implemented and unit-tested, but NO production caller.
+// The v0.4.0 release notes presented "regex tool rules" as delivered; that was
+// wrong and has been corrected. Nothing in the product consults these rules, so
+// declaring a rule changes no tool call's outcome. Do not describe tool rules
+// as active, enforced, or protecting anything until a caller exists.
+// Marker convention: see the "Wiring markers" block in `deveagent-auto-skill.ts`.
+//
 // Security semantics (the parts the guarantees rest on):
 //
 // 1. Deny always wins. Every matching `deny` rule is evaluated across the

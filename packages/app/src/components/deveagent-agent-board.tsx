@@ -223,7 +223,7 @@ export function DeveagentAgentBoard() {
                     type="button"
                     data-action="deveagent-agent-board-retry"
                     disabled={busy()}
-                    class="mt-1 shrink-0 rounded border border-v2-border-border-focus/40 px-1.5 py-0.5 text-[10px] text-v2-text-text-accent hover:bg-v2-background-bg-accent/10 disabled:opacity-50"
+                    class="mt-1 shrink-0 rounded border border-v2-border-border-focus/40 px-1.5 py-0.5 text-[10px] text-v2-text-text-accent hover:[background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse hover:[color:var(--v2-text-text-inverse)] disabled:opacity-50"
                     onClick={() => void retry(job)}
                   >
                     {language.t("deveagent.agents.retry")}

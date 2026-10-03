@@ -1,6 +1,7 @@
 // @refresh reload
 
 import { generateNeutralScale, hexToOklch, oklchToHex, shift } from "../color"
+import { enforceQuietTextContrast } from "../resolve"
 import { mapV2Foreground } from "./foreground"
 import { mapV2Semantics, mergeV2Tokens } from "./mapping"
 import type { DesktopTheme, HexColor, ResolvedV2Theme, ThemeVariant, V2ColorValue } from "../types"
@@ -132,11 +133,32 @@ export function generateV2Primitives(variant: ThemeVariant, isDark: boolean): Re
   }
 }
 
+/**
+ * Guarantee the quiet text tiers stay readable against the surfaces they render
+ * on, whatever produced them.
+ *
+ * This is the shared clamp from the v1 layer, applied to the FINAL merged v2
+ * tokens: `v2Overrides` merge last and win outright — six shipped themes
+ * hardcode a dark-mode `v2-text-text-faint` that is unreadable on their own
+ * dark card (deveagent-light measured 2.12:1), which is the user-reported
+ * "colors too pale". Running on the merged tokens covers hand-written overrides
+ * and future themes alike, instead of only the generated path. The v2 surface
+ * set is a superset of what the generator alone could see.
+ */
+const V2_QUIET_SURFACES = ["v2-background-bg-base", "v2-background-bg-layer-01", "v2-background-bg-layer-02"] as const
+/** Quietest first, so each tier is floored above the one below it. */
+const V2_QUIET_TIERS = ["v2-text-text-faint", "v2-text-text-muted"] as const
+const V2_QUIET_ANCHORS = ["v2-text-text-base", "v2-text-text-inverse", "v2-text-text-contrast"] as const
+
 export function resolveThemeVariantV2(variant: ThemeVariant, isDark: boolean): ResolvedV2Theme {
   const primitives = generateV2Primitives(variant, isDark)
   const semantics = mapV2Semantics(isDark)
   const foreground = mapV2Foreground(readPalette(variant).ink, isDark, primitives, variant.overrides)
-  return mergeV2Tokens(primitives, semantics, foreground, variant.v2Overrides ?? {})
+  return enforceQuietTextContrast(mergeV2Tokens(primitives, semantics, foreground, variant.v2Overrides ?? {}), {
+    surfaces: V2_QUIET_SURFACES,
+    tiers: V2_QUIET_TIERS,
+    anchors: V2_QUIET_ANCHORS,
+  })
 }
 
 export function resolveThemeV2(theme: DesktopTheme): { light: ResolvedV2Theme; dark: ResolvedV2Theme } {

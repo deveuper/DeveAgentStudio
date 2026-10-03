@@ -5,7 +5,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import path from "node:path"
 import type { ToolContext } from "@opencode-ai/plugin"
-import deveagentPlugin, { toggleGoalCriterion, assertPublicBrowserUrl, buildTeamTaskInput, cancelTeamRun, captureDeveAgentCompactionMemory, checkRemoteSkillUpdates, checkRoleProfileModel, classifyVisionFallback, clearGoal, clearGoalDraft, clearGrillingDecisions, clearLoop, clearSessionAuxiliary, completeGrilling, computePrefixShape, confirmGoal, createDeveAgentCodeGraphIndex, createDeveAgentContextPack, createDeveAgentRuntimePrompt, createReviewScope, createSessionToolQueue, dispatchTeamAll, dispatchTeamMember, estimateDeveAgentCost, exportGrillingDecisions, exportWorkspaceMarkdownForObsidian, extractSymbols, extractSymbolsFromFiles, getDeveAgentCodeGraphIndexStatus, getDeveAgentCodeGraphNeighbors, getDeveAgentMemoryTree, getDeveAgentSkillMarket, getDeveAgentState, getDeveAgentMetrics, resetDeveAgentMetrics, getDeveAgentTeam, getDeveAgentTeamPhases, getDeveAgentTeamRuns, getActiveGoalByDirectory, getGoal, getGoalDraft, getGoalQueue, getGrillingDecisions, getGrillingStatus, getLoop, getLoopQueue, getSessionAuxiliary, getSuperpowersPrompt, getSuperpowersPromptAsync, getTeamMemberByRole, goalBackoffMs, goalNextAttemptForTest, installRemoteSkill, isDangerousPermissionTarget, isGrillingWriteBlocked, isTreeSitterAvailable, loadDeveAgentTeamState, loadDeveAgentTeamRuns, loadLocalSkills, mapTeamWithConcurrency, autoSkillReviewPendingForTest, buildDeveAgentTurnTail, markAutoSkillReviewPendingForTest, getMessageModes, loadRemoteSkills, loadMessageModesFromDisk, loopBackoffMs, markGoalVerifyUnavailable, normalizeDeveAgentClawHubMarket, stampMessageMode, normalizeDeveAgentMcpRegistryResponse, normalizeDeveAgentSkillHubMarket, normalizeDeveAgentSkillMarketTree, normalizeDeveAgentState, normalizeGrillingTimingEntries, normalizeRemoteSkillUrl, parseDeveAgentComputerUseShellCommand, pauseLoop, prefixShapeSnapshot, prepareGoal, projectDeveAgentSessionContextPack, promoteDeveAgentMemoryCandidate, queryDeveAgentMemory, rankFiles, readDeveAgentMcpMarketPreferences, readDeveAgentSkillMarketPreferences, readDeveAgentRecentSessionMessages, recordGrillingDecision, recordPrefixShape, recordProviderPromptTokens, recordRequestChars, recoverInterruptedTeamRuns, reconcileTeamRunChildren, rememberDeveAgentMemory, removeLocalSkill, removeRemoteSkill, renewTeamPhaseLease, reserveGoalReentry, resolveEffectiveToolExecution, resumeLoop, reviewTeamSynthesisArtifacts, scanGoalQueueOnce, scanLoopQueueOnce, setDeveAgentSessionContextPack, setDeveAgentState, setSessionAuxiliary, setGoal, setLoop, syncDeveAgentRuntimeGlobals, transcribeOpenAICompatibleAudio, treeSitterExtractSymbols, treeSitterExtractSymbolsFromFiles, updateRemoteSkill, validateDeveAgentMcpRemoteUrl, verifyGoal, visionFallbackMessage, voiceTranscriptionUrl, waitForGoalStoreFlush, waitForLoopStoreFlush, waitForTeamStateFlush, writeDeveAgentMcpMarketPreferences, writeDeveAgentSkillMarketPreferences } from "./deveagent"
+import deveagentPlugin, { toggleGoalCriterion, assertPublicBrowserUrl, buildTeamTaskInput, cancelTeamRun, captureDeveAgentCompactionMemory, checkRemoteSkillUpdates, checkRoleProfileModel, classifyVisionFallback, clearGoal, clearGoalDraft, clearGrillingDecisions, clearLoop, clearSessionAuxiliary, completeGrilling, computePrefixShape, confirmGoal, createDeveAgentCodeGraphIndex, createDeveAgentContextPack, createDeveAgentRuntimePrompt, createReviewScope, createSessionToolQueue, dispatchTeamAll, dispatchTeamMember, estimateDeveAgentCost, exportGrillingDecisions, exportWorkspaceMarkdownForObsidian, extractSymbols, extractSymbolsFromFiles, getDeveAgentCodeGraphIndexStatus, getDeveAgentCodeGraphNeighbors, getDeveAgentMemoryTree, getDeveAgentSkillMarket, getDeveAgentState, getDeveAgentMetrics, resetDeveAgentMetrics, getDeveAgentTeam, getDeveAgentTeamPhases, getDeveAgentTeamRuns, getActiveGoalByDirectory, getGoal, getGoalDraft, getGoalQueue, getGrillingDecisions, getGrillingStatus, getLoop, getLoopQueue, getSessionAuxiliary, getSuperpowersPrompt, getSuperpowersPromptAsync, getTeamMemberByRole, goalBackoffMs, goalNextAttemptForTest, installRemoteSkill, isDangerousPermissionTarget, isGrillingWriteBlocked, isTreeSitterAvailable, loadDeveAgentTeamState, loadDeveAgentTeamRuns, loadLocalSkills, mapTeamWithConcurrency, autoSkillReviewPendingForTest, buildDeveAgentTurnTail, markAutoSkillReviewPendingForTest, getMessageModes, loadRemoteSkills, loadMessageModesFromDisk, loopBackoffMs, markGoalVerifyUnavailable, normalizeDeveAgentClawHubMarket, stampMessageMode, normalizeDeveAgentMcpRegistryResponse, normalizeDeveAgentSkillHubMarket, normalizeDeveAgentSkillMarketTree, normalizeDeveAgentState, normalizeGrillingTimingEntries, normalizeRemoteSkillUrl, parseDeveAgentComputerUseShellCommand, pauseLoop, prefixShapeSnapshot, prepareGoal, projectDeveAgentSessionContextPack, promoteDeveAgentMemoryCandidate, queryDeveAgentMemory, rankFiles, readDeveAgentMcpMarketPreferences, readDeveAgentSkillMarketPreferences, readDeveAgentRecentSessionMessages, recordGrillingDecision, recordPrefixShape, recordProviderPromptTokens, recordRequestChars, recoverInterruptedTeamRuns, reconcileTeamRunChildren, rememberDeveAgentMemory, retryFailedTeamMembers, removeLocalSkill, removeRemoteSkill, renewTeamPhaseLease, reserveGoalReentry, resolveEffectiveToolExecution, resumeLoop, reviewTeamSynthesisArtifacts, scanGoalQueueOnce, scanLoopQueueOnce, setDeveAgentSessionContextPack, setDeveAgentState, setSessionAuxiliary, setGoal, setLoop, syncDeveAgentRuntimeGlobals, transcribeOpenAICompatibleAudio, treeSitterExtractSymbols, treeSitterExtractSymbolsFromFiles, updateRemoteSkill, validateDeveAgentMcpRemoteUrl, verifyGoal, verifyGoalWithEvidence, visionFallbackMessage, voiceTranscriptionUrl, waitForGoalStoreFlush, waitForLoopStoreFlush, waitForTeamStateFlush, writeDeveAgentMcpMarketPreferences, writeDeveAgentSkillMarketPreferences } from "./deveagent"
 
 import { appendDeveAgentMemoryNote, consolidateDeveAgentMemory, ensureDeveAgentMemoryScaffold, rebuildDeveAgentMemoryContext, reconcileDeveAgentMemory, runLoopNow, writeDeveAgentMemoryCheckpoint, writeDeveAgentMemoryProgress } from "./deveagent"
 
@@ -1326,8 +1326,11 @@ describe("CodeGraph ranked context", () => {
     try {
       const hooks = await deveagentPlugin.server({ client: {}, directory } as unknown as Parameters<typeof deveagentPlugin.server>[0])
       setGoal({ sessionID, description: "Ship the focused fix", criteria: ["tests pass"] })
+      // R7: a completion claim now needs a verifiable artifact, so the test
+      // cites the file it actually wrote.
+      await writeFile(path.join(directory, "CHANGELOG.md"), "- focused fix\n")
       const output = await hooks.tool!["goal-verify"].execute(
-        { met: true, reason: "Focused tests passed." },
+        { met: true, reason: "Focused tests passed.", evidence: [{ criterion: 1, kind: "file", value: "CHANGELOG.md" }] },
         { sessionID } as unknown as ToolContext,
       )
       const result = JSON.parse(output as string) as { status: string }
@@ -1335,6 +1338,200 @@ describe("CodeGraph ranked context", () => {
       const decisions = (await getDeveAgentMemoryTree({ directory })).groups.find((group) => group.kind === "decision")?.entries ?? []
       expect(decisions[0]?.summary).toContain("Focused tests passed.")
       expect(decisions[0]?.summary).toContain("tests pass")
+    } finally {
+      clearGoal(sessionID)
+      await rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 })
+    }
+  })
+
+  // R7: the gap this closes. `goal-verify` used to accept the agent's own
+  // `met: true` as the final word whenever no independent verifier was
+  // configured — which is the DEFAULT state, because a verifier needs a
+  // separately-configured aux model. So the agent that did the work was, in
+  // practice, the only judge of it. This test fails on the old code.
+  test("a bare met=true claim without evidence is refused, not verified", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "deveagent-goal-bare-"))
+    const sessionID = "goal-bare-claim"
+    try {
+      const hooks = await deveagentPlugin.server({ client: {}, directory } as unknown as Parameters<typeof deveagentPlugin.server>[0])
+      setGoal({ sessionID, description: "Claim without proof", criteria: ["tests pass"] })
+      const output = JSON.parse(
+        (await hooks.tool!["goal-verify"].execute({ met: true }, { sessionID } as unknown as ToolContext)) as string,
+      ) as { status: string; evidence?: { verdict: string; reason: string }; stopReason?: string }
+      expect(output.status).toBe("in_progress")
+      expect(output.evidence?.verdict).toBe("rejected")
+      expect(output.evidence?.reason).toContain("No usable evidence")
+      // The goal must stay active for an honest retry.
+      expect(getGoal(sessionID).status).toBe("in_progress")
+    } finally {
+      clearGoal(sessionID)
+      await rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 })
+    }
+  })
+
+  test("evidence citing a file that does not exist is refused", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "deveagent-goal-missing-"))
+    const sessionID = "goal-missing-file"
+    try {
+      const hooks = await deveagentPlugin.server({ client: {}, directory } as unknown as Parameters<typeof deveagentPlugin.server>[0])
+      setGoal({ sessionID, description: "Cite a ghost", criteria: ["the file exists"] })
+      const output = JSON.parse(
+        (await hooks.tool!["goal-verify"].execute(
+          { met: true, evidence: [{ criterion: 1, kind: "file", value: "does-not-exist.ts" }] },
+          { sessionID } as unknown as ToolContext,
+        )) as string,
+      ) as { status: string; evidence?: { verdict: string; uncoveredCriteria: number[]; perCriterion: { detail: string }[] } }
+      expect(output.status).toBe("in_progress")
+      expect(output.evidence?.verdict).toBe("rejected")
+      expect(output.evidence?.uncoveredCriteria).toEqual([1])
+      expect(output.evidence?.perCriterion[0]?.detail).toContain("not found")
+    } finally {
+      clearGoal(sessionID)
+      await rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 })
+    }
+  })
+
+  test("a command-only citation is recorded as a claim and cannot confirm a criterion", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "deveagent-goal-claim-"))
+    const sessionID = "goal-claim-only"
+    try {
+      const hooks = await deveagentPlugin.server({ client: {}, directory } as unknown as Parameters<typeof deveagentPlugin.server>[0])
+      setGoal({ sessionID, description: "Claim a command", criteria: ["tests pass"] })
+      const output = JSON.parse(
+        (await hooks.tool!["goal-verify"].execute(
+          { met: true, evidence: [{ criterion: 1, kind: "test", value: "bun test" }] },
+          { sessionID } as unknown as ToolContext,
+        )) as string,
+      ) as { status: string; evidence?: { verdict: string; claims: number; machineVerified: number } }
+      expect(output.status).toBe("in_progress")
+      expect(output.evidence?.verdict).toBe("rejected")
+      // The claim is visible to the user, but it is not proof.
+      expect(output.evidence?.claims).toBe(1)
+      expect(output.evidence?.machineVerified).toBe(0)
+    } finally {
+      clearGoal(sessionID)
+      await rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 })
+    }
+  })
+
+  test("partial evidence coverage is refused: one artifact cannot carry two criteria", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "deveagent-goal-partial-"))
+    const sessionID = "goal-partial-coverage"
+    try {
+      const hooks = await deveagentPlugin.server({ client: {}, directory } as unknown as Parameters<typeof deveagentPlugin.server>[0])
+      setGoal({ sessionID, description: "Two things", criteria: ["first", "second"] })
+      await writeFile(path.join(directory, "only-first.txt"), "done\n")
+      const output = JSON.parse(
+        (await hooks.tool!["goal-verify"].execute(
+          { met: true, evidence: [{ criterion: 1, kind: "file", value: "only-first.txt" }] },
+          { sessionID } as unknown as ToolContext,
+        )) as string,
+      ) as { status: string; evidence?: { verdict: string; uncoveredCriteria: number[] } }
+      expect(output.status).toBe("in_progress")
+      expect(output.evidence?.verdict).toBe("rejected")
+      expect(output.evidence?.uncoveredCriteria).toEqual([2])
+    } finally {
+      clearGoal(sessionID)
+      await rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 })
+    }
+  })
+
+  test("the evidence gate can only downgrade: a verified claim still faces a configured verifier", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "deveagent-goal-gate-vs-verifier-"))
+    const sessionID = "goal-gate-verifier"
+    const originalFetch = globalThis.fetch
+    try {
+      await mkdir(path.join(directory, ".deveagent"), { recursive: true })
+      await writeFile(path.join(directory, ".deveagent", "verifier.json"), JSON.stringify({ baseUrl: "http://verifier.test/v1", model: "verifier-m" }))
+      const hooks = await deveagentPlugin.server({ client: {}, directory } as unknown as Parameters<typeof deveagentPlugin.server>[0])
+      setGoal({ sessionID, description: "Both gates apply", criteria: ["tests pass"] })
+      await writeFile(path.join(directory, "artifact.txt"), "real\n")
+      // Evidence passes, but the independent verifier disagrees.
+      globalThis.fetch = (async () =>
+        new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ criteria: [{ index: 1, met: false, reason: "no suite output" }], allMet: false }) } }] }), {
+          status: 200,
+        })) as unknown as typeof fetch
+      const output = JSON.parse(
+        (await hooks.tool!["goal-verify"].execute(
+          { met: true, evidence: [{ criterion: 1, kind: "file", value: "artifact.txt" }] },
+          { sessionID } as unknown as ToolContext,
+        )) as string,
+      ) as { status: string; evidence?: { verdict: string }; independentVerifier?: { verdict: string } }
+      expect(output.status).toBe("in_progress")
+      expect(output.evidence?.verdict).toBe("confirmed")
+      expect(output.independentVerifier?.verdict).toBe("rejected")
+    } finally {
+      globalThis.fetch = originalFetch
+      clearGoal(sessionID)
+      await rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 })
+    }
+  })
+
+  // R7 (second hole): the HTTP route /api/deveagent/goal/verify called
+  // verifyGoal directly, so anything reaching it skipped the gate the goal-verify
+  // TOOL enforces — a second, ungated way to mark a goal verified. The gated
+  // entry point is now the only non-user path. This test pins that entry point
+  // itself; the route delegates to it.
+  test("the gated entry point refuses a bare claim and accepts one with a real artifact", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "deveagent-goal-entry-"))
+    const sessionID = "goal-entry-point"
+    try {
+      setGoal({ sessionID, description: "Entry point", criteria: ["artifact exists"], directory })
+      await writeFile(path.join(directory, "artifact.txt"), "real\n")
+      // Bare claim: refused.
+      const bare = verifyGoalWithEvidence({ met: true, sessionID, evidence: [] })
+      expect(bare.status).toBe("in_progress")
+      expect(bare.evidence?.verdict).toBe("rejected")
+      // Same claim with a verified artifact: accepted.
+      const withArtifact = verifyGoalWithEvidence({
+        met: true,
+        sessionID,
+        evidence: [{ criterion: 1, kind: "file", value: "artifact.txt" }],
+      })
+      expect(withArtifact.status).toBe("verified")
+      expect(withArtifact.evidence?.verdict).toBe("confirmed")
+      expect(withArtifact.verifiedBy).toBe("agent")
+    } finally {
+      clearGoal(sessionID)
+      await rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 })
+    }
+  })
+
+  test("a manual user confirmation is labelled and not presented as a checked completion", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "deveagent-goal-manual-"))
+    const sessionID = "goal-manual-confirm"
+    try {
+      setGoal({ sessionID, description: "Manual", criteria: ["one", "two"], directory })
+      const toggle = (index: number, done: boolean) => toggleGoalCriterion(sessionID, index, done)
+      toggle(0, true)
+      toggle(1, true)
+      const goal = getGoal(sessionID)
+      // The user is the final authority and is not locked out of their own task...
+      expect(goal.status).toBe("verified")
+      // ...but the record says a human confirmed it, not the evidence gate.
+      expect(goal.verifiedBy).toBe("user")
+      // A manual confirmation is not an error, so no rejection is recorded; the
+      // label is what carries the distinction.
+      expect(goal.lastVerifyRejection).toBeUndefined()
+    } finally {
+      clearGoal(sessionID)
+      await rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 })
+    }
+  })
+
+  test("a refused claim leaves a visible reason instead of an unchanged goal", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "deveagent-goal-reason-"))
+    const sessionID = "goal-refusal-visible"
+    try {
+      const hooks = await deveagentPlugin.server({ client: {}, directory } as unknown as Parameters<typeof deveagentPlugin.server>[0])
+      setGoal({ sessionID, description: "Needs proof", criteria: ["something real"] })
+      await hooks.tool!["goal-verify"].execute({ met: true }, { sessionID } as unknown as ToolContext)
+      const goal = getGoal(sessionID)
+      // The status bar reads this; without it a rejected claim was
+      // indistinguishable from no attempt at all.
+      expect(goal.lastVerifyRejection).toBeDefined()
+      expect(goal.lastVerifyRejection?.reason).toContain("No usable evidence")
+      expect(goal.status).toBe("in_progress")
     } finally {
       clearGoal(sessionID)
       await rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 })
@@ -1405,12 +1602,19 @@ describe("CodeGraph ranked context", () => {
           status: 200,
         })) as unknown as typeof fetch
       setGoal({ sessionID, description: "Ship the focused fix", criteria: ["tests pass"] })
+      // R7: a verifier confirmation is not enough on its own — the claim also
+      // has to cite a verifiable artifact, so this test writes and cites one.
+      await writeFile(path.join(directory, "focused-fix.txt"), "done\n")
       const confirmed = JSON.parse(
-        (await hooks.tool!["goal-verify"].execute({ met: true }, { sessionID } as unknown as ToolContext)) as string,
-      ) as { status: string; verifier?: { verdict: string }; independentVerifier?: { verdict: string } }
+        (await hooks.tool!["goal-verify"].execute(
+          { met: true, evidence: [{ criterion: 1, kind: "file", value: "focused-fix.txt" }] },
+          { sessionID } as unknown as ToolContext,
+        )) as string,
+      ) as { status: string; verifier?: { verdict: string }; independentVerifier?: { verdict: string }; evidence?: { verdict: string } }
       expect(confirmed.status).toBe("verified")
       expect(confirmed.verifier?.verdict).toBe("confirmed")
       expect(confirmed.independentVerifier?.verdict).toBe("confirmed")
+      expect(confirmed.evidence?.verdict).toBe("confirmed")
 
       // P0-2 fail-closed: a configured verifier that cannot answer no longer
       // waves the claim through. The goal stays in progress for bounded
@@ -1876,6 +2080,14 @@ describe("persistent remote skill install", () => {
       checks = await checkRemoteSkillUpdates({ directory: workspace })
       expect(checks[0].upToDate).toBe(true)
       expect(checks[0].updatedAt).toBeTruthy()
+
+      const timestamp = checks[0].updatedAt
+      const repeated = await updateRemoteSkill({ id: "update-flow-test", directory: workspace })
+      expect(repeated.updated).toBe(true)
+      expect(repeated.changed).toBe(false)
+      expect(repeated.error).toBeUndefined()
+      checks = await checkRemoteSkillUpdates({ directory: workspace })
+      expect(checks[0].updatedAt).toBe(timestamp)
     } finally {
       await removeRemoteSkill("update-flow-test", workspace)
       await rm(workspace, { recursive: true, force: true })
@@ -2500,6 +2712,32 @@ describe("goal worker recovery and scheduling evidence", () => {
     return goal
   }
 
+  // Queue item 3 (M1): the goal's token budget must reach the PROMPT as a
+  // hard maxOutputTokens, not only be re-checked after the turn. Fails on the
+  // old code, where the body had no maxOutputTokens at all.
+  test("a goal with a token budget passes maxOutputTokens to the prompt call", async () => {
+    drainGoalQueue()
+    await withGoalStore(async (dir) => {
+      setGoal({ sessionID: "goal-budget-hardcap", description: "Hard cap", criteria: ["A"], budgetTokens: 250, directory: dir })
+      goalNextAttemptForTest("goal-budget-hardcap", Date.now() - 1)
+      let seen: { maxOutputTokens?: number } | undefined
+      const client = {
+        session: {
+          prompt: async (input: { body?: { maxOutputTokens?: number } }) => {
+            seen = input.body ?? {}
+            return {}
+          },
+          async get() {
+            return { data: { tokens: { input: 1, output: 1, reasoning: 0, cache: { read: 0, write: 0 } }, cost: 0 } }
+          },
+        },
+      }
+      await scanGoalQueueOnce(client, dir)
+      expect(seen?.maxOutputTokens).toBe(250)
+      clearGoal("goal-budget-hardcap")
+    })
+  })
+
   test("goal budget breach ends the goal as failed with the real numbers", async () => {
     drainGoalQueue()
     await withGoalStore(async (dir) => {
@@ -2519,6 +2757,80 @@ describe("goal worker recovery and scheduling evidence", () => {
       clearGoal("goal-budget")
     })
   })
+  // R2: a provider turn that fails does NOT reject the prompt promise — the
+  // error rides on the assistant message and the call resolves. Treating a
+  // resolve as success recorded a failed attempt as completed AND reset
+  // retryCount/lastError, so a permanently failing goal looked healthy and
+  // retried forever with no honest error. This test fails on the old code.
+  test("a resolved turn that carries a provider error is a failed goal attempt", async () => {
+    drainGoalQueue()
+    await withGoalStore(async (dir) => {
+      setGoal({ sessionID: "goal-turn-error", description: "Failing goal", criteria: ["A"] })
+      goalNextAttemptForTest("goal-turn-error", Date.now() - 1)
+      const client = {
+        session: {
+          async prompt() {
+            return { info: { error: { message: "provider exploded mid-turn" } } }
+          },
+          async get() {
+            return { data: { tokens: { input: 1, output: 1, reasoning: 0, cache: { read: 0, write: 0 } }, cost: 0 } }
+          },
+        },
+      }
+      await scanGoalQueueOnce(client, dir)
+      const goal = getGoal("goal-turn-error")
+      // The attempt must be recorded failed, the error preserved, and the retry
+      // budget consumed — not reset.
+      expect(goal.attempts[goal.attempts.length - 1]?.status).toBe("failed")
+      expect(goal.retryCount).toBeGreaterThan(0)
+      expect(goal.lastError).toContain("provider exploded mid-turn")
+      expect(goal.status).toBe("in_progress")
+      clearGoal("goal-turn-error")
+    })
+  })
+
+  test("a goal that fails every pass ends failed and keeps the reason visible", async () => {
+    drainGoalQueue()
+    await withGoalStore(async (dir) => {
+      setGoal({ sessionID: "goal-turn-error-exhausted", description: "Always failing", criteria: ["A"] })
+      const client = {
+        session: {
+          async prompt() {
+            return { info: { error: "boom" } }
+          },
+          async get() {
+            return { data: { tokens: { input: 1, output: 1, reasoning: 0, cache: { read: 0, write: 0 } }, cost: 0 } }
+          },
+        },
+      }
+      // Drive the scheduler until the goal ends. Each failed pass pushes
+      // nextAttemptAt into the future, so rewind it to keep scanning.
+      //
+      // The re-entry budget (maxReentries, default 8) is always spent before
+      // the retry budget (GOAL_MAX_RETRIES = 12), so re-entry is what terminates
+      // a permanently failing goal. That is why the stop reason must carry the
+      // last error: without it the user cannot tell a provider failure from a
+      // goal that merely needed more turns.
+      for (let pass = 0; pass < 20; pass++) {
+        goalNextAttemptForTest("goal-turn-error-exhausted", Date.now() - 1)
+        await scanGoalQueueOnce(client, dir)
+        if (getGoal("goal-turn-error-exhausted").status === "failed") break
+      }
+      const goal = getGoal("goal-turn-error-exhausted")
+      expect(goal.status).toBe("failed")
+      // `active` deliberately stays true for a failed goal: the honesty line
+      // renders a "Goal Failed / do not continue automatically" block from it,
+      // and the queue filter only picks status === "in_progress", so it is not
+      // rescheduled. Assert the real contract instead — it must leave the queue.
+      expect(getGoalQueue(dir).some((item) => item.sessionID === "goal-turn-error-exhausted")).toBe(false)
+      expect(goal.stopReason).toContain("re-entry budget exhausted")
+      // The failure reason must survive into the terminal state.
+      expect(goal.stopReason).toContain("boom")
+      expect(goal.lastError).toContain("boom")
+      clearGoal("goal-turn-error-exhausted")
+    })
+  })
+
   test("goalBackoffMs grows linearly and caps at 60 seconds", () => {
     expect(goalBackoffMs(1)).toBe(5_000)
     expect(goalBackoffMs(3)).toBe(15_000)
@@ -2890,10 +3202,12 @@ describe("goal worker recovery and scheduling evidence", () => {
       expect(getGoal(sessionID).status).toBe("in_progress")
       expect(getGoal(sessionID).budgetUnreadableCount).toBe(1)
       // One readable reading resets the counter instead of letting it accrue.
-      const readable = { session: { get: async () => ({ data: { tokens: { input: 5, output: 5 } } }), promptAsync } }
+      const readable = { session: { get: async () => ({ data: { tokens: { input: 5, output: 5, reasoning: 0, cache: { read: 0, write: 0 } } } }), promptAsync } }
       await scanGoalQueueOnce(readable, dir)
       expect(getGoal(sessionID).budgetUnreadableCount).toBe(0)
-      await scanGoalQueueOnce(failing, dir)
+      const partial = { session: { get: async () => ({ data: { tokens: {} } }), promptAsync } }
+      await scanGoalQueueOnce(partial, dir)
+      expect(getGoal(sessionID).budgetUnreadableCount).toBe(1)
       await scanGoalQueueOnce(failing, dir)
       await scanGoalQueueOnce(failing, dir)
       const goal = getGoal(sessionID)
@@ -3257,6 +3571,65 @@ describe("loop worker persistence and scheduling evidence", () => {
     })
   })
 
+  // R3: same class as R2 on the loop driver. A provider turn that fails resolves
+  // normally, so `await` was treated as a successful pass: it consumed a run
+  // from the budget, reset retryCount/lastError, and could march a loop that
+  // never worked all the way to "completed". This test fails on the old code.
+  test("a resolved loop pass that carries a provider error does not consume the run budget", async () => {
+    drainLoopQueue()
+    await withLoopStore(async (dir) => {
+      const sessionID = "loop-turn-error"
+      setLoop({ sessionID, directory: dir, task: "Failing pass", intervalSeconds: 3600, maxRuns: 3, maxRetries: 2 })
+      runLoopNow(sessionID)
+      const client = {
+        session: {
+          async prompt() {
+            return { info: { error: { message: "provider exploded" } } }
+          },
+        },
+      }
+      await scanLoopQueueOnce(client, dir)
+      const loop = getLoop(sessionID)
+      // The failed pass must not count as a completed run, and the reason must
+      // be recorded rather than swallowed.
+      expect(loop.runCount).toBe(0)
+      expect(loop.retryCount).toBe(1)
+      expect(loop.lastError).toContain("provider exploded")
+      expect(loop.status).not.toBe("completed")
+      clearLoop(sessionID)
+      await waitForLoopStoreFlush()
+    })
+  })
+
+  test("a loop whose passes keep failing ends failed instead of marching to completed", async () => {
+    drainLoopQueue()
+    await withLoopStore(async (dir) => {
+      const sessionID = "loop-turn-error-exhausted"
+      setLoop({ sessionID, directory: dir, task: "Always failing", intervalSeconds: 3600, maxRuns: 1, maxRetries: 2 })
+      const client = {
+        session: {
+          async prompt() {
+            return { info: { error: "boom" } }
+          },
+        },
+      }
+      // maxRuns is 1: with the old semantics the very first pass would have
+      // marked the loop completed. Drive it until it terminates honestly.
+      for (let pass = 0; pass < 8; pass++) {
+        runLoopNow(sessionID)
+        await scanLoopQueueOnce(client, dir)
+        if (getLoop(sessionID).status === "failed") break
+      }
+      const loop = getLoop(sessionID)
+      expect(loop.status).toBe("failed")
+      expect(loop.active).toBe(false)
+      expect(loop.runCount).toBe(0)
+      expect(loop.stopReason).toContain("boom")
+      clearLoop(sessionID)
+      await waitForLoopStoreFlush()
+    })
+  })
+
   test("v2 loop recovery never replaces an in-flight pass with a newer disk snapshot", async () => {
     drainLoopQueue()
     await withLoopStore(async (dir) => {
@@ -3302,24 +3675,47 @@ describe("loop worker persistence and scheduling evidence", () => {
     })
   })
 
-  test("missing session usage never estimates and never pauses a budgeted loop", async () => {
+  test("missing session usage pauses a budgeted loop before a due pass", async () => {
     drainLoopQueue()
     await withLoopStore(async (dir) => {
       setLoop({ sessionID: "loop-budget-missing", task: "No usage reported", intervalSeconds: 3600, maxRuns: 8, budgetTokens: 1 })
-      // session.get returns an entry without token numbers: honest budgets
-      // skip the check instead of treating nothing as zero.
+      runLoopNow("loop-budget-missing")
+      let calls = 0
       const client = {
         session: {
-          promptAsync: async () => {},
+          promptAsync: async () => { calls++ },
           get: async () => ({ data: {} }),
         },
       }
       await scanLoopQueueOnce(client, dir)
       const entry = getLoop("loop-budget-missing")
-      // Not paused, and the one-hour pass never ran (interval not due).
-      expect(entry.status).toBe("running")
+      expect(entry.status).toBe("paused")
+      expect(entry.stopReason).toContain("usage is unavailable")
+      expect(calls).toBe(0)
       expect(entry.runCount).toBe(0)
       clearLoop("loop-budget-missing")
+    })
+  })
+  test("invalid and partial budget snapshots never reopen Loop admission", async () => {
+    drainLoopQueue()
+    await withLoopStore(async (dir) => {
+      const complete = { input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } }
+      for (const data of [
+        { tokens: {} },
+        { tokens: { ...complete, input: -1 } },
+        { tokens: { ...complete, output: NaN } },
+        { tokens: complete, cost: -1 },
+      ]) {
+        const sessionID = "loop-invalid-budget"
+        setLoop({ sessionID, directory: dir, task: "Budget validation", maxRuns: 2, budgetTokens: 100, ...(data.cost !== undefined ? { budgetCostUsd: 1 } : {}) })
+        runLoopNow(sessionID)
+        let calls = 0
+        await scanLoopQueueOnce({ session: { get: async () => ({ data }), prompt: async () => { calls++ } } }, dir)
+        expect(calls).toBe(0)
+        expect(getLoop(sessionID).status).toBe("paused")
+        clearLoop(sessionID)
+        await waitForLoopStoreFlush()
+      }
     })
   })
   test("stale disk snapshot does not overwrite the live replacement loop", async () => {
@@ -4614,20 +5010,31 @@ describe("team orchestration evidence", () => {
       })
       let active = 0
       let maximum = 0
+      // The map body blocks on a real timer, and worker startup is not
+      // instantaneous: with a 15ms hold the three workers could still be
+      // observed one-at-a-time under load, so the old `toBe(3)` was flaky (it
+      // failed ~50% of runs on this machine even on a clean checkout). Hold
+      // long enough that a correct scheduler reliably overlaps, and assert the
+      // contract that actually matters: the observed peak never EXCEEDS the
+      // limit, and the limit is genuinely used.
+      const HOLD_MS = 120
       const tools = await teamTools()
       const output = await tools["team-dispatch-all"].execute(
         { task: "Check concurrency" },
         teamContext(sessionID, async () => {
           active += 1
           maximum = Math.max(maximum, active)
-          await new Promise((resolve) => setTimeout(resolve, 15))
+          await new Promise((resolve) => setTimeout(resolve, HOLD_MS))
           active -= 1
           return advisorResult(100)
         }),
       )
       const parsed = JSON.parse(output as string)
       expect(parsed.results).toHaveLength(4)
-      expect(maximum).toBe(3)
+      // The scheduler must never run more than the parallel limit at once.
+      expect(maximum).toBeLessThanOrEqual(3)
+      // ...and it must actually parallelise rather than running one at a time.
+      expect(maximum).toBeGreaterThanOrEqual(2)
     })
   })
 
@@ -4804,6 +5211,85 @@ describe("team orchestration evidence", () => {
     } finally {
       await rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 })
     }
+  })
+
+  // R1: runTeamMember reports a failed member as `{ error }` on a RESOLVED
+  // value — it never rejects. The retry driver mapped every fulfilled outcome
+  // to status:"completed" and dropped `value.error`, so a retry could only ever
+  // produce a run full of successes no matter how the children ended. This test
+  // fails on the old code (member reported completed) and passes after the fix.
+  test("retrying a failed member records it as failed when the member errors", async () => {
+    await withTeamRunStore(async () => {
+      const sessionID = "orch_retry_member_error"
+      setDeveAgentTeam({
+        sessionID,
+        enabled: true,
+        runMode: "sequential",
+        maxRetries: 0,
+        budgetTokens: 10_000,
+        members: [{ id: "p1", name: "Planner", role: "planner", providerID: "x", modelID: "y", enabled: true }],
+      })
+      const tools = await teamTools()
+      // First pass: the child fails, so the run is recorded failed.
+      await tools["team-dispatch-all"].execute(
+        { task: "Design the retry path" },
+        teamContext(sessionID, async () => {
+          throw new Error("provider exploded")
+        }),
+      )
+      const source = getDeveAgentTeamRuns(sessionID)[0]
+      expect(source?.status).toBe("failed")
+
+      const result = await retryFailedTeamMembers(
+        { sessionID },
+        {
+          runTask: async () => {
+            throw new Error("provider exploded again")
+          },
+        },
+      )
+      expect(result.ok).toBe(true)
+      // The retry driver finishes asynchronously; wait for the new run to settle.
+      let retried = getDeveAgentTeamRuns(sessionID).find((run) => run.id !== source!.id)
+      for (let i = 0; i < 60 && retried?.status === "running"; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 25))
+        retried = getDeveAgentTeamRuns(sessionID).find((run) => run.id !== source!.id)
+      }
+      expect(retried?.status).toBe("failed")
+      expect(retried?.members[0]?.status).toBe("failed")
+      expect(retried?.members[0]?.error).toContain("provider exploded again")
+    })
+  })
+
+  // R8: the fail-closed "unknown" status existed in completeTeamRun but nothing
+  // ever wrote it, so a member that produced no terminal result counted as a
+  // success. A dispatch whose member returns nothing must not be a green run.
+  //
+  // A dispatch creates several run rows (the advisor pass and the synthesis
+  // pass). The advisor pass is the one that carried the member which produced
+  // no result, and it is the one that must end failed.
+  test("a member that yields no result is recorded as unknown, not completed", async () => {
+    await withTeamRunStore(async () => {
+      const sessionID = "orch_member_no_result"
+      setDeveAgentTeam({
+        sessionID,
+        enabled: true,
+        runMode: "sequential",
+        maxRetries: 0,
+        budgetTokens: 10_000,
+        members: [{ id: "p1", name: "Planner", role: "planner", providerID: "x", modelID: "y", enabled: true }],
+      })
+      const tools = await teamTools()
+      await tools["team-dispatch-all"].execute(
+        { task: "Return nothing at all" },
+        teamContext(sessionID, async () => undefined as unknown as TeamTaskResult),
+      )
+      const runs = getDeveAgentTeamRuns(sessionID)
+      const advisorRun = runs.find((run) => run.status === "failed")
+      expect(advisorRun).toBeDefined()
+      expect(advisorRun?.members[0]?.status).toBe("unknown")
+      expect(advisorRun?.members[0]?.error).toContain("no terminal result")
+    })
   })
 })
 

@@ -4,7 +4,7 @@
 
 > Ceci est la présentation française complète de DeveAgent Studio. La page [Toutes les langues](./README.md) répertorie aussi les langues disponibles dans l'interface de l'application.
 
-**Langues de l'interface :** English · 简体中文 · 繁體中文 · 한국어 · Deutsch · Español · Français · Dansk · 日本語 · Polski · Русский · Українська · العربية · Norsk · Português (Brasil) · ไทย · Bosanski · Türkçe
+**Langues de l'interface :** 29 langues, dont le français, l’anglais et le chinois ; [liste complète](./README.md). Le choix des langues du site est distinct de celui de l’application.
 
 **Un poste de travail autonome pour le code, la planification et les tâches longues, fondé sur l'architecture OpenCode et doté de l'interface DeveAgent.**
 
@@ -13,6 +13,10 @@ DeveAgent Studio conserve OpenCode comme moteur réel pour les sessions, les fou
 ---
 
 ## Fonctionnalités principales
+
+**Mise à jour du 2026-10-03 :** les mises à jour répétées des skills Markdown sont idempotentes et les erreurs réseau sont affichées correctement. La vérification facultative se fait à l’ouverture de la page installée ; l’utilisateur confirme l’installation. Le site présente de nouvelles captures, l’architecture et des guides en anglais, chinois simplifié et français.
+
+[Site en français](https://deveuper.github.io/DeveAgentStudio/?lang=fr) · [Langues de l’interface](./README.md)
 
 ### Exécution autonome bornée
 

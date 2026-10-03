@@ -6,22 +6,32 @@
 
 **An autonomous agent workstation for coding, planning, and long-running tasks.**
 
-Built on the OpenCode architecture, with a DeveAgent-native shell — goals that
-verify themselves, teams that cross-examine each other, and a UI that shows
-what the agent is actually doing.
+Built on OpenCode, with a DeveAgent workstation for bounded tasks, real child
+sessions, configurable tools, and observable usage.
 
 [![Release](https://img.shields.io/github/v/release/deveuper/DeveAgentStudio?style=flat-square&color=2563eb)](../../releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-111827?style=flat-square)](#install)
 [![License](https://img.shields.io/badge/license-MIT-16a34a?style=flat-square)](./LICENSE)
 [![Languages](https://img.shields.io/badge/UI-29%20languages-f59e0b?style=flat-square)](#languages)
 
-**English** · [简体中文](./docs/readme/README.zh-CN.md) · [繁體中文](./docs/readme/README.zht.md) · [日本語](./docs/readme/README.ja.md) · [한국어](./docs/readme/README.ko.md) · [Deutsch](./docs/readme/README.de.md) · [Français](./docs/readme/README.fr.md) · [Español](./docs/readme/README.es.md) · [Русский](./docs/readme/README.ru.md) · [All 29 →](./docs/readme/README.md)
+**English** · [简体中文](./docs/readme/README.zh-CN.md) · [Français](./docs/readme/README.fr.md) · [All UI languages →](./docs/readme/README.md)
 
 </div>
 
 ---
 
 ## Why this exists
+
+**Updated, 2026-10-03:** Remote Markdown Skill updates are idempotent and
+failed checks are no longer reported as "all up to date". Optional checks run
+when the installed-Skills page is open. Updates are installed on your command.
+The website includes refreshed screenshots, an architecture overview, and
+direct English, Simplified Chinese and French guides.
+
+[Website](https://deveuper.github.io/DeveAgentStudio/?lang=en) ·
+[Architecture and screenshots](https://deveuper.github.io/DeveAgentStudio/#architecture)
+
+![OpenCode Core, DeveAgent Shell and runtime boundaries](./docs/assets/architecture-20261003.png)
 
 Most AI coding tools are either a terminal with a chat box, or a pretty window
 that hides what the model is doing. Neither survives a long task.
@@ -81,12 +91,12 @@ context usage, cache hits, tokens, cost and rounds in one calm glyph line.
 
 | Capability | What it actually does |
 | --- | --- |
-| **Goal** | Turn a request into an acceptance-criteria goal. The agent works, calls `goal-verify`, and an **independent verifier model** re-checks every criterion against the transcript before the goal may complete. Budget and deadline are enforced; a goal that cannot read its usage meter stops instead of spending blind. |
+| **Goal** | Persistent criteria, bounded continuation, deadlines, usage checks and completion evidence. The `goal-verify` tool can use a verifier model; the evidence gate is not a universal independent rerun of all acceptance tests. Full-workload correctness and total-cost enforcement still require verification. |
 | **Go mode** | One switch: submit a goal and it is confirmed automatically, running plan → execute → self-verify without a confirmation round trip. |
 | **Loop** | Repeat a task on an interval or cron with run budgets, retry limits, wall-clock deadlines and a lease so two workers never run the same pass. |
 | **Team / MoA** | Dispatch parallel or debating members as real child sessions, each with its own model and role. Failed members can be retried individually. |
 | **Grilling** | An adversarial mode that cross-examines a plan before you commit to it. |
-| **Self-improvement** | The agent can persist a reusable procedure as a skill (`skill-save`), validated and written to `.deveagent/skills/`. A provenance ledger records who wrote each skill; the agent may only update its own — user-authored and pinned skills are refused, never silently overwritten. Unused skills go stale in the ledger after 30 days, archived after 90 — nothing is deleted. |
+| **Self-improvement** | The agent can persist a reusable procedure as a skill (`skill-save`), validated and written to `.deveagent/skills/`. A provenance ledger records who wrote each skill; the agent may only update its own — user-authored and pinned skills are refused, never silently overwritten. **Staged, not active:** nothing loads `.deveagent/skills/` yet (the skill loaders read other directories), so a saved skill is written to disk but is *not* injected into the current or any later session, and the tool reports `staged: true, active: false`. The 30-day stale / 90-day archived maintenance rule is implemented and unit-tested but has no production caller, so nothing currently goes stale or gets archived. |
 
 ### Honest by construction
 
@@ -163,24 +173,15 @@ node script/package-desktop.mjs <label>   # produces a packaged build
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full workflow.
 
-## Status and honest boundaries
+## Development and validation
 
-This is an active project, not a finished product. What is verified today:
+App and locale regression suites run with
+`bun run --cwd packages/app test:unit`. Runtime tests live alongside the
+DeveAgent modules. Release downloads include their version and asset metadata.
 
-- 535 app unit tests, 274 agent-runtime tests, 6 locale-parity gates — green.
-- End-to-end acceptance probes run against **packaged builds**, not source:
-  real-model smoke, plan mode, loop, background tasks, MoA debate, team retry,
-  rewind checkpoints, MCP connect/failure states, composer geometry, startup
-  timing, cache A/B.
-
-What is **not** verified, and should not be claimed:
-
-- No multi-hour real-workload soak test has been run. Recovery paths are tested
-  with fixtures and free models, not with an eight-hour production session.
-- Model quality is whatever provider you connect. This project makes runs
-  observable and bounded; it does not make a model smarter.
-- Computer Use covers window inventory, focus, UI element trees and input on
-  Windows; desktop OCR and cross-application workflows are not claimed.
+The workstation provides configurable models, real sessions, visible task
+records, tool permissions and file checkpoints. Windows Computer Use adapters
+include window discovery, focus, UI trees and input actions.
 
 ## License
 

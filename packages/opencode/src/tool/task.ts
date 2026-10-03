@@ -15,6 +15,7 @@ import { RuntimeFlags } from "@/effect/runtime-flags"
 import { Database } from "@opencode-ai/core/database/database"
 import { ModelV2 } from "@opencode-ai/core/model"
 import { ProviderV2 } from "@opencode-ai/core/provider"
+import { BackgroundSubagentsUnavailableError } from "./task-errors"
 
 export interface TaskPromptOps {
   cancel(sessionID: SessionID): Effect.Effect<void>
@@ -118,9 +119,7 @@ export const TaskTool = Tool.define(
         ? Math.max(1, Math.min(128_000, Math.floor(params.max_output_tokens)))
         : undefined
       if (runInBackground && !flags.experimentalBackgroundSubagents) {
-        return yield* Effect.fail(
-          new Error("Background subagents require OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS=true"),
-        )
+        return yield* Effect.fail(new BackgroundSubagentsUnavailableError())
       }
 
       if (!ctx.extra?.bypassAgentCheck) {

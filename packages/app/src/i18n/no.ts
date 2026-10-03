@@ -2,6 +2,7 @@ import { dict as en } from "./en"
 type Keys = keyof typeof en
 
 export const dict = {
+  "deveagent.skillstore.autoCheckOnOpen": "Sjekk når butikken åpnes",
   "command.category.suggested": "Foreslått",
   "command.category.view": "Visning",
   "command.category.project": "Prosjekt",
@@ -200,6 +201,8 @@ export const dict = {
   "provider.disconnect.toast.disconnected.description": "Modeller fra {{provider}} er ikke lenger tilgjengelige.",
 
   "model.tag.free": "Gratis",
+
+  "model.wireId": "Sendes som",
   "model.tag.latest": "Nyeste",
   "model.provider.anthropic": "Anthropic",
   "model.provider.openai": "OpenAI",
@@ -884,6 +887,7 @@ export const dict = {
   "deveagent.statusbar.autoApprove": "Automatisk godkjenning",
   "deveagent.statusbar.fullAccess": "Full tilgang",
   "deveagent.statusbar.goalDone": "Mål fullført",
+  "deveagent.statusbar.goalVerifyRejected": "Målpåstand avvist",
   "deveagent.statusbar.usage": "Forbruk",
   "deveagent.statusbar.ready": "Klar",
   "deveagent.statusbar.context": "Kontekst",
@@ -1387,6 +1391,7 @@ export const dict = {
   "deveagent.voice.startVoiceInput": "Start taleinndata",
   "deveagent.composer.roleBoundModelTitle": "Faktisk i bruk: {{model}} (bundet til rolle {{role}})",
   "deveagent.composer.roleRoutingTitle": "Rolle-ruting: {{role}} (ingen bundet Model for rollen; bruker gjeldende Model)",
+  "deveagent.composer.modelUnavailable": "Ikke tilgjengelig på denne kanalen",
   "deveagent.composer.roleRoutingHint": "Rolle-ruting: {{role}} (meldinger rutes til rollens Model; ubundne roller følger standardregelen. Klikk for å tømme og gjenopprette manuelt valg)",
   "deveagent.composer.unloadSkill": "Fjern {{name}} fra økten",
   "deveagent.composer.switchHint": "Å bytte modus eller modell midt i økten bevarer konteksten; rolleruting bruker rollemodellen eller nåværende",
@@ -1736,10 +1741,8 @@ export const dict = {
   "deveagent.dashboard.usageInput": "Inndata",
   "deveagent.dashboard.usageOutput": "Utdata",
   "deveagent.dashboard.sessionMetrics": "Sesjonsmålinger",
-  "deveagent.dashboard.sessionCost": "Sesjonskostnad",
   "deveagent.dashboard.elapsed": "Medgått tid",
   "deveagent.dashboard.requests": "Forespørsler",
-  "deveagent.dashboard.totalTokens": "Totalt antall tokens",
   "deveagent.dashboard.memoryRss": "Minne-RSS",
   "deveagent.dashboard.usageAndCache": "Forbruk og cache",
   "deveagent.dashboard.awaitingModelUsage": "Venter på modellforbruk",
@@ -1778,6 +1781,8 @@ export const dict = {
   "deveagent.dashboard.subsessions": "undersesjoner",
   "deveagent.dashboard.legacyLedgerFallback": "fallback til eldre hovedbok",
   "deveagent.dashboard.metricsSource": "Kilde for målinger",
+  "deveagent.fallbacks.title": "Modell-fallbacks",
+  "deveagent.fallbacks.paid": "Betalt",
   "deveagent.dashboard.sessionData": "Sesjonsdata",
   "deveagent.dashboard.globalDefault": "Global standard",
   "deveagent.dashboard.noFallbackChain": "Ingen Fallback chain er konfigurert",

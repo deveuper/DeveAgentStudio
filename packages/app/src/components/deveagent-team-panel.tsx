@@ -543,7 +543,7 @@ export function DeveagentTeamPanel(props: { sessionID?: string; directorySlug?: 
             {(member: DeveAgentTeamMember) => (
               <div class="rounded-lg border border-v2-border-border-muted bg-v2-background-bg-layer-02 p-3">
                 <div class="flex items-center gap-2">
-                  <span class="rounded bg-v2-background-bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold text-v2-text-text-accent">
+                  <span class="rounded [background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse px-1.5 py-0.5 text-[10px] font-semibold">
                     {language.t(TEAM_ROLE_PRESETS[member.role].labelKey)}
                   </span>
                   <div class="min-w-0 flex-1 truncate font-medium text-v2-text-text-base">{member.name}</div>

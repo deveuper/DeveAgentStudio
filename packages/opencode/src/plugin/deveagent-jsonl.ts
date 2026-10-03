@@ -6,6 +6,15 @@
 // newest line backwards — the direction every existing reader already uses —
 // step over a bad line instead of stopping, and report what was stepped over
 // so the caller can surface it. Pure functions: no I/O, no dependencies.
+//
+// Wiring status (marker convention documented in `deveagent-auto-skill.ts`):
+//   WIRED  — `readJsonlTolerant`, called by the runs reader
+//            (`deveagent-run.ts`) and the checkpoints reader
+//            (`deveagent-checkpoints.ts`).
+//   STAGED — `truncateTornTail`, the write-side repair. It has no production
+//            caller, so the writers it was written for still append without
+//            splitting a torn tail first. "Crash-tolerant replay" is accurate
+//            for reading only; do not claim the write path is repaired.
 
 export type JsonlReadResult<T> = {
   records: T[]
@@ -25,6 +34,9 @@ function parseTolerant<T>(line: string, parse: (value: unknown) => T | undefined
 }
 
 /**
+ * WIRED: called by `deveagent-run.ts` (run journal) and
+ * `deveagent-checkpoints.ts` (checkpoint log) in production.
+ *
  * Read as many newest records as the caller asks for, skipping damaged lines.
  *
  * Records come back newest-first, matching the order the existing readers
@@ -65,6 +77,14 @@ export function readJsonlTolerant<T>(input: {
 }
 
 /**
+ * STAGED: implemented and unit-tested, but NO production caller.
+ *
+ * This is the write-side half of crash tolerance, and it is the half that is
+ * missing in production: the runs / checkpoints / guardian writers still append
+ * without calling it, so a torn tail can still be glued onto the next record.
+ * Only the tolerant READ path (`readJsonlTolerant`) is wired. Do not describe
+ * the JSONL layer as fully crash-tolerant until a writer calls this.
+ *
  * Split off a final line that never finished being written.
  *
  * A writer calls this before appending: appending after a torn fragment would

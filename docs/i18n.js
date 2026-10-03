@@ -13,10 +13,10 @@ const EN = {
   "hero.title": "An agent workstation that shows its work.",
   "hero.sub": "Most AI coding tools are either a terminal with a chat box, or a pretty window that hides what the model is doing. Neither survives hour six. DeveAgent Studio keeps the proven OpenCode engine and adds an agent layer that is bounded, observable and recoverable.",
   "hero.download": "Download for Windows",
-  "hero.downloadMeta": "180 MB · v0.2.0",
+  "hero.downloadMeta": "180 MB · v0.4.0",
   "hero.github": "View source",
   "facts.platforms": "Windows · macOS · Linux",
-  "facts.langs": "29 UI languages",
+  "facts.langs": "20 UI languages",
   "facts.license": "MIT licensed",
   "facts.byok": "Bring your own key",
   "why.title": "Why it exists",
@@ -98,9 +98,9 @@ const ZH = {
   "hero.sub": "多数 AI 编程工具要么是带聊天框的终端，要么是漂亮却看不见模型在干什么的窗口——两者都撑不过第六个小时。DeveAgent Studio 保留经过验证的 OpenCode 引擎，在其上加了一层有界、可观测、可恢复的 Agent 能力。",
   "hero.download": "下载 Windows 版",
   "hero.github": "查看源码",
-  "hero.downloadMeta": "180 MB · v0.2.0",
+  "hero.downloadMeta": "180 MB · v0.4.0",
   "facts.platforms": "Windows · macOS · Linux",
-  "facts.langs": "29 种界面语言",
+  "facts.langs": "20 种界面语言",
   "facts.license": "MIT 许可",
   "facts.byok": "自带 API Key",
   "why.title": "为什么做这个",
@@ -182,12 +182,12 @@ const ZHT = {
   "hero.sub": "多數 AI 編程工具要麼是帶聊天框的終端，要麼是漂亮卻看不見模型在幹什麼的視窗——兩者都撐不過第六個小時。DeveAgent Studio 保留經過驗證的 OpenCode 引擎，在其上加了一層有界、可觀測、可恢復的 Agent 能力。",
   "hero.download": "下載 Windows 版",
   "hero.github": "查看原始碼",
-  "hero.downloadMeta": "180 MB · v0.2.0",
+  "hero.downloadMeta": "180 MB · v0.4.0",
   "facts.platforms": "Windows · macOS · Linux",
   "install.win": "Windows 10 / 11 · x64",
   "install.mac": "macOS",
   "install.linux": "Linux",
-  "facts.langs": "29 種介面語言",
+  "facts.langs": "20 種介面語言",
   "facts.license": "MIT 授權",
   "facts.byok": "自帶 API Key",
   "why.title": "為什麼做這個",
@@ -266,13 +266,13 @@ const JA = {
   "hero.sub": "多くの AI コーディングツールは、チャット欄付きのターミナルか、モデルが何をしているかを隠す綺麗なウィンドウのどちらかです。どちらも 6 時間目には耐えられません。DeveAgent Studio は実績ある OpenCode エンジンを保ち、その上に有界・可観測・復旧可能なエージェント層を追加します。",
   "hero.download": "Windows 版をダウンロード",
   "hero.github": "ソースを見る",
-  "hero.downloadMeta": "180 MB · v0.2.0",
+  "hero.downloadMeta": "180 MB · v0.4.0",
   "facts.platforms": "Windows · macOS · Linux",
   "install.win": "Windows 10 / 11 · x64",
   "install.win.body": "DeveAgent-Studio-win-x64.exe · 180 MB · インストーラー",
   "install.mac": "macOS",
   "install.linux": "Linux",
-  "facts.langs": "UI 29 言語",
+  "facts.langs": "UI 20 言語",
   "facts.license": "MIT ライセンス",
   "facts.byok": "API キーは自分のもの",
   "why.title": "なぜ作ったか",
@@ -350,13 +350,13 @@ const KO = {
   "hero.sub": "대부분의 AI 코딩 도구는 채팅 상자가 달린 터미널이거나, 모델이 무엇을 하는지 감추는 예쁜 창입니다. 둘 다 6시간을 버티지 못합니다. DeveAgent Studio는 검증된 OpenCode 엔진을 유지하고 그 위에 유계·관측 가능·복구 가능한 에이전트 계층을 더합니다.",
   "hero.download": "Windows용 다운로드",
   "hero.github": "소스 보기",
-  "hero.downloadMeta": "180 MB · v0.2.0",
+  "hero.downloadMeta": "180 MB · v0.4.0",
   "facts.platforms": "Windows · macOS · Linux",
   "install.win": "Windows 10 / 11 · x64",
   "install.win.body": "DeveAgent-Studio-win-x64.exe · 180 MB · 설치 프로그램",
   "install.mac": "macOS",
   "install.linux": "Linux",
-  "facts.langs": "UI 29개 언어",
+  "facts.langs": "UI 20개 언어",
   "facts.license": "MIT 라이선스",
   "facts.byok": "키는 직접 관리",
   "why.title": "왜 만들었나",
@@ -424,25 +424,122 @@ const KO = {
 }
 
 const SHORT = {
-  de: { "nav.why": "Warum", "nav.shots": "Screenshots", "nav.features": "Funktionen", "nav.install": "Installation", "nav.status": "Status", "hero.eyebrow": "Begrenzte Autonomie für lange Aufgaben", "hero.title": "Eine Agent-Workstation, die ihre Arbeit zeigt.", "hero.download": "Für Windows herunterladen", "hero.github": "Quellcode ansehen", "facts.langs": "29 UI-Sprachen", "facts.license": "MIT-Lizenz", "facts.byok": "Eigener Schlüssel", "why.title": "Warum es existiert", "shots.title": "Screenshots", "features.title": "Was es tut", "honest.title": "Ehrlich by design", "install.title": "Installation", "install.lead": "Eine Datei, keine Runtime nötig.", "install.button": "Herunterladen", "install.first.title": "Erster Start", "install.unsigned.title": "Zur Warnung", "status.title": "Status und Grenzen", "status.verified": "Heute verifiziert", "status.unverified": "Nicht verifiziert — nicht behaupten", "footer.built": "Basiert auf OpenCode (MIT)", "footer.repo": "Quellcode", "footer.releases": "Alle Releases", "footer.license": "Lizenz" },
-  fr: { "nav.why": "Pourquoi", "nav.shots": "Captures", "nav.features": "Fonctions", "nav.install": "Installation", "nav.status": "État", "hero.eyebrow": "Autonomie encadrée pour les tâches longues", "hero.title": "Un poste de travail d'agent qui montre son travail.", "hero.download": "Télécharger pour Windows", "hero.github": "Voir le code", "facts.langs": "29 langues d'interface", "facts.license": "Licence MIT", "facts.byok": "Votre propre clé", "why.title": "Pourquoi ce projet", "shots.title": "Captures d'écran", "features.title": "Ce qu'il fait", "honest.title": "Honnête par construction", "install.title": "Installation", "install.lead": "Un fichier, aucune runtime à installer.", "install.button": "Télécharger", "install.first.title": "Premier lancement", "install.unsigned.title": "À propos de l'avertissement", "status.title": "État et limites", "status.verified": "Vérifié aujourd'hui", "status.unverified": "Non vérifié — ne pas affirmer", "footer.built": "Basé sur OpenCode (MIT)", "footer.repo": "Code", "footer.releases": "Toutes les versions", "footer.license": "Licence" },
-  es: { "nav.why": "Por qué", "nav.shots": "Capturas", "nav.features": "Funciones", "nav.install": "Instalar", "nav.status": "Estado", "hero.eyebrow": "Autonomía acotada para tareas largas", "hero.title": "Una estación de agentes que muestra su trabajo.", "hero.download": "Descargar para Windows", "hero.github": "Ver código", "facts.langs": "29 idiomas de interfaz", "facts.license": "Licencia MIT", "facts.byok": "Tu propia clave", "why.title": "Por qué existe", "shots.title": "Capturas", "features.title": "Qué hace", "honest.title": "Honesto por construcción", "install.title": "Instalar", "install.lead": "Un archivo, sin runtime previo.", "install.button": "Descargar", "install.first.title": "Primer inicio", "install.unsigned.title": "Sobre el aviso", "status.title": "Estado y límites", "status.verified": "Verificado hoy", "status.unverified": "No verificado — no afirmar", "footer.built": "Basado en OpenCode (MIT)", "footer.repo": "Código", "footer.releases": "Todas las versiones", "footer.license": "Licencia" },
-  pt: { "nav.why": "Por quê", "nav.shots": "Capturas", "nav.features": "Recursos", "nav.install": "Instalar", "nav.status": "Estado", "hero.eyebrow": "Autonomia limitada para tarefas longas", "hero.title": "Uma estação de agentes que mostra o seu trabalho.", "hero.download": "Baixar para Windows", "hero.github": "Ver código", "facts.langs": "29 idiomas de interface", "facts.license": "Licença MIT", "facts.byok": "Sua própria chave", "why.title": "Por que existe", "shots.title": "Capturas", "features.title": "O que faz", "honest.title": "Honesto por construção", "install.title": "Instalar", "install.lead": "Um arquivo, sem runtime para instalar antes.", "install.button": "Baixar", "install.first.title": "Primeira execução", "install.unsigned.title": "Sobre o aviso", "status.title": "Estado e limites", "status.verified": "Verificado hoje", "status.unverified": "Não verificado — não afirmar", "footer.built": "Baseado no OpenCode (MIT)", "footer.repo": "Código", "footer.releases": "Todas as versões", "footer.license": "Licença" },
-  ru: { "nav.why": "Зачем", "nav.shots": "Скриншоты", "nav.features": "Возможности", "nav.install": "Установка", "nav.status": "Статус", "hero.eyebrow": "Ограниченная автономия для долгих задач", "hero.title": "Рабочая станция агента, которая показывает свою работу.", "hero.download": "Скачать для Windows", "hero.github": "Исходный код", "facts.langs": "29 языков интерфейса", "facts.license": "Лицензия MIT", "facts.byok": "Свой ключ", "why.title": "Зачем это", "shots.title": "Скриншоты", "features.title": "Что умеет", "honest.title": "Честность в реализации", "install.title": "Установка", "install.lead": "Один файл, среда не нужна.", "install.button": "Скачать", "install.first.title": "Первый запуск", "install.unsigned.title": "О предупреждении", "status.title": "Статус и границы", "status.verified": "Проверено", "status.unverified": "Не проверено — не заявлять", "footer.built": "На базе OpenCode (MIT)", "footer.repo": "Код", "footer.releases": "Все релизы", "footer.license": "Лицензия" },
-  it: { "nav.why": "Perché", "nav.shots": "Schermate", "nav.features": "Funzioni", "nav.install": "Installa", "nav.status": "Stato", "hero.eyebrow": "Autonomia limitata per attività lunghe", "hero.title": "Una workstation per agenti che mostra il suo lavoro.", "hero.download": "Scarica per Windows", "hero.github": "Vedi il codice", "facts.langs": "29 lingue UI", "facts.license": "Licenza MIT", "facts.byok": "Chiave propria", "why.title": "Perché esiste", "shots.title": "Schermate", "features.title": "Cosa fa", "honest.title": "Onesto per costruzione", "install.title": "Installa", "install.lead": "Un file, nessun runtime da installare.", "install.button": "Scarica", "install.first.title": "Primo avvio", "install.unsigned.title": "Sull'avviso", "status.title": "Stato e limiti", "status.verified": "Verificato oggi", "status.unverified": "Non verificato — non affermare", "footer.built": "Basato su OpenCode (MIT)", "footer.repo": "Codice", "footer.releases": "Tutte le versioni", "footer.license": "Licenza" },
-  nl: { "nav.why": "Waarom", "nav.shots": "Screenshots", "nav.features": "Functies", "nav.install": "Installeren", "nav.status": "Status", "hero.eyebrow": "Begrensde autonomie voor lange taken", "hero.title": "Een agent-werkstation dat zijn werk toont.", "hero.download": "Download voor Windows", "hero.github": "Broncode", "facts.langs": "29 UI-talen", "facts.license": "MIT-licentie", "facts.byok": "Eigen sleutel", "why.title": "Waarom dit bestaat", "shots.title": "Screenshots", "features.title": "Wat het doet", "honest.title": "Eerlijk door constructie", "install.title": "Installeren", "install.lead": "Eén bestand, geen runtime nodig.", "install.button": "Downloaden", "install.first.title": "Eerste start", "install.unsigned.title": "Over de waarschuwing", "status.title": "Status en grenzen", "status.verified": "Vandaag geverifieerd", "status.unverified": "Niet geverifieerd — niet beweren", "footer.built": "Gebouwd op OpenCode (MIT)", "footer.repo": "Broncode", "footer.releases": "Alle releases", "footer.license": "Licentie" },
-  pl: { "nav.why": "Dlaczego", "nav.shots": "Zrzuty", "nav.features": "Funkcje", "nav.install": "Instalacja", "nav.status": "Status", "hero.eyebrow": "Ograniczona autonomia dla długich zadań", "hero.title": "Stacja robocza agenta, która pokazuje swoją pracę.", "hero.download": "Pobierz dla Windows", "hero.github": "Kod źródłowy", "facts.langs": "29 języków interfejsu", "facts.license": "Licencja MIT", "facts.byok": "Własny klucz", "why.title": "Dlaczego istnieje", "shots.title": "Zrzuty ekranu", "features.title": "Co robi", "honest.title": "Uczciwość w kodzie", "install.title": "Instalacja", "install.lead": "Jeden plik, bez środowiska.", "install.button": "Pobierz", "install.first.title": "Pierwsze uruchomienie", "install.unsigned.title": "O ostrzeżeniu", "status.title": "Status i granice", "status.verified": "Zweryfikowane", "status.unverified": "Niezweryfikowane — nie twierdzić", "footer.built": "Na bazie OpenCode (MIT)", "footer.repo": "Kod", "footer.releases": "Wszystkie wydania", "footer.license": "Licencja" },
-  tr: { "nav.why": "Neden", "nav.shots": "Ekran görüntüleri", "nav.features": "Özellikler", "nav.install": "Kurulum", "nav.status": "Durum", "hero.eyebrow": "Uzun görevler için sınırlı özerklik", "hero.title": "İşini gösteren bir ajan çalışma istasyonu.", "hero.download": "Windows için indir", "hero.github": "Kaynak kodu", "facts.langs": "29 arayüz dili", "facts.license": "MIT lisansı", "facts.byok": "Kendi anahtarınız", "why.title": "Neden var", "shots.title": "Ekran görüntüleri", "features.title": "Ne yapar", "honest.title": "Tasarımı gereği dürüst", "install.title": "Kurulum", "install.lead": "Tek dosya, çalışma zamanı gerekmez.", "install.button": "İndir", "install.first.title": "İlk çalıştırma", "install.unsigned.title": "Uyarı hakkında", "status.title": "Durum ve sınırlar", "status.verified": "Doğrulandı", "status.unverified": "Doğrulanmadı — iddia etmeyin", "footer.built": "OpenCode (MIT) üzerine kurulu", "footer.repo": "Kaynak", "footer.releases": "Tüm sürümler", "footer.license": "Lisans" },
-  ar: { "nav.why": "لماذا", "nav.shots": "لقطات", "nav.features": "الميزات", "nav.install": "التثبيت", "nav.status": "الحالة", "hero.eyebrow": "استقلالية محدودة للمهام الطويلة", "hero.title": "محطة عمل للوكيل تُظهر عملها.", "hero.download": "تنزيل لويندوز", "hero.github": "الشيفرة المصدرية", "facts.langs": "29 لغة للواجهة", "facts.license": "رخصة MIT", "facts.byok": "مفتاحك الخاص", "why.title": "لماذا وُجد", "shots.title": "لقطات الشاشة", "features.title": "ماذا يفعل", "honest.title": "الصدق في التصميم", "install.title": "التثبيت", "install.lead": "ملف واحد، بلا بيئة تشغيل مسبقة.", "install.button": "تنزيل", "install.first.title": "التشغيل الأول", "install.unsigned.title": "حول التحذير", "status.title": "الحالة والحدود", "status.verified": "تم التحقق", "status.unverified": "غير مُتحقَّق — لا تدّعِ", "footer.built": "مبني على OpenCode (MIT)", "footer.repo": "الشيفرة", "footer.releases": "كل الإصدارات", "footer.license": "الرخصة" },
-  hi: { "nav.why": "क्यों", "nav.shots": "स्क्रीनशॉट", "nav.features": "विशेषताएँ", "nav.install": "इंस्टॉल", "nav.status": "स्थिति", "hero.eyebrow": "लंबे कामों के लिए सीमित स्वायत्तता", "hero.title": "एक एजेंट वर्कस्टेशन जो अपना काम दिखाता है।", "hero.download": "Windows के लिए डाउनलोड", "hero.github": "सोर्स देखें", "facts.langs": "29 UI भाषाएँ", "facts.license": "MIT लाइसेंस", "facts.byok": "अपनी कुंजी", "why.title": "यह क्यों है", "shots.title": "स्क्रीनशॉट", "features.title": "यह क्या करता है", "honest.title": "रचना से ईमानदार", "install.title": "इंस्टॉल", "install.lead": "एक फ़ाइल, कोई रनटाइम पहले नहीं।", "install.button": "डाउनलोड", "install.first.title": "पहला रन", "install.unsigned.title": "चेतावनी के बारे में", "status.title": "स्थिति और सीमाएँ", "status.verified": "सत्यापित", "status.unverified": "असत्यापित — दावा न करें", "footer.built": "OpenCode (MIT) पर बना", "footer.repo": "सोर्स", "footer.releases": "सभी रिलीज़", "footer.license": "लाइसेंस" },
-  vi: { "nav.why": "Vì sao", "nav.shots": "Ảnh chụp", "nav.features": "Tính năng", "nav.install": "Cài đặt", "nav.status": "Trạng thái", "hero.eyebrow": "Tự chủ có giới hạn cho tác vụ dài", "hero.title": "Một workstation agent cho thấy việc nó làm.", "hero.download": "Tải cho Windows", "hero.github": "Xem mã nguồn", "facts.langs": "29 ngôn ngữ giao diện", "facts.license": "Giấy phép MIT", "facts.byok": "Khoá của bạn", "why.title": "Vì sao tồn tại", "shots.title": "Ảnh chụp màn hình", "features.title": "Nó làm gì", "honest.title": "Trung thực từ thiết kế", "install.title": "Cài đặt", "install.lead": "Một tệp, không cần runtime.", "install.button": "Tải xuống", "install.first.title": "Lần chạy đầu", "install.unsigned.title": "Về cảnh báo", "status.title": "Trạng thái và giới hạn", "status.verified": "Đã xác minh", "status.unverified": "Chưa xác minh — đừng khẳng định", "footer.built": "Dựa trên OpenCode (MIT)", "footer.repo": "Mã nguồn", "footer.releases": "Tất cả bản phát hành", "footer.license": "Giấy phép" },
-  th: { "nav.why": "ทำไม", "nav.shots": "ภาพหน้าจอ", "nav.features": "คุณสมบัติ", "nav.install": "ติดตั้ง", "nav.status": "สถานะ", "hero.eyebrow": "อัตโนมัติแบบมีขอบเขตสำหรับงานยาว", "hero.title": "เวิร์กสเตชันเอเจนต์ที่แสดงงานของตัวเอง", "hero.download": "ดาวน์โหลดสำหรับ Windows", "hero.github": "ดูซอร์สโค้ด", "facts.langs": "29 ภาษาของ UI", "facts.license": "สัญญาอนุญาต MIT", "facts.byok": "คีย์ของคุณเอง", "why.title": "ทำไมจึงมี", "shots.title": "ภาพหน้าจอ", "features.title": "มันทำอะไร", "honest.title": "ซื่อสัตย์โดยการออกแบบ", "install.title": "ติดตั้ง", "install.lead": "ไฟล์เดียว ไม่ต้องติดตั้งรันไทม์", "install.button": "ดาวน์โหลด", "install.first.title": "การรันครั้งแรก", "install.unsigned.title": "เกี่ยวกับคำเตือน", "status.title": "สถานะและขอบเขต", "status.verified": "ตรวจสอบแล้ว", "status.unverified": "ยังไม่ตรวจสอบ — อย่ากล่าวอ้าง", "footer.built": "สร้างบน OpenCode (MIT)", "footer.repo": "ซอร์ส", "footer.releases": "ทุกเวอร์ชัน", "footer.license": "สัญญาอนุญาต" },
-  id: { "nav.why": "Mengapa", "nav.shots": "Tangkapan layar", "nav.features": "Fitur", "nav.install": "Pasang", "nav.status": "Status", "hero.eyebrow": "Otonomi terbatas untuk tugas panjang", "hero.title": "Workstation agen yang memperlihatkan kerjanya.", "hero.download": "Unduh untuk Windows", "hero.github": "Lihat sumber", "facts.langs": "29 bahasa UI", "facts.license": "Lisensi MIT", "facts.byok": "Kunci Anda sendiri", "why.title": "Mengapa ada", "shots.title": "Tangkapan layar", "features.title": "Apa yang dilakukannya", "honest.title": "Jujur sejak dirancang", "install.title": "Pasang", "install.lead": "Satu berkas, tanpa runtime.", "install.button": "Unduh", "install.first.title": "Jalankan pertama", "install.unsigned.title": "Tentang peringatan", "status.title": "Status dan batasan", "status.verified": "Terverifikasi", "status.unverified": "Belum terverifikasi — jangan klaim", "footer.built": "Dibangun di atas OpenCode (MIT)", "footer.repo": "Sumber", "footer.releases": "Semua rilis", "footer.license": "Lisensi" },
-  uk: { "nav.why": "Чому", "nav.shots": "Скріншоти", "nav.features": "Можливості", "nav.install": "Встановлення", "nav.status": "Статус", "hero.eyebrow": "Обмежена автономія для довгих задач", "hero.title": "Робоча станція агента, що показує свою роботу.", "hero.download": "Завантажити для Windows", "hero.github": "Вихідний код", "facts.langs": "29 мов інтерфейсу", "facts.license": "Ліцензія MIT", "facts.byok": "Власний ключ", "why.title": "Навіщо це", "shots.title": "Скріншоти", "features.title": "Що вміє", "honest.title": "Чесність у реалізації", "install.title": "Встановлення", "install.lead": "Один файл, середовище не потрібне.", "install.button": "Завантажити", "install.first.title": "Перший запуск", "install.unsigned.title": "Про попередження", "status.title": "Статус і межі", "status.verified": "Перевірено", "status.unverified": "Не перевірено — не заявляти", "footer.built": "На базі OpenCode (MIT)", "footer.repo": "Код", "footer.releases": "Усі релізи", "footer.license": "Ліцензія" },
+  de: { "nav.why": "Warum", "nav.shots": "Screenshots", "nav.features": "Funktionen", "nav.install": "Installation", "nav.status": "Status", "hero.eyebrow": "Begrenzte Autonomie für lange Aufgaben", "hero.title": "Eine Agent-Workstation, die ihre Arbeit zeigt.", "hero.download": "Für Windows herunterladen", "hero.github": "Quellcode ansehen", "facts.langs": "20 UI-Sprachen", "facts.license": "MIT-Lizenz", "facts.byok": "Eigener Schlüssel", "why.title": "Warum es existiert", "shots.title": "Screenshots", "features.title": "Was es tut", "honest.title": "Ehrlich by design", "install.title": "Installation", "install.lead": "Eine Datei, keine Runtime nötig.", "install.button": "Herunterladen", "install.first.title": "Erster Start", "install.unsigned.title": "Zur Warnung", "status.title": "Status und Grenzen", "status.verified": "Heute verifiziert", "status.unverified": "Nicht verifiziert — nicht behaupten", "footer.built": "Basiert auf OpenCode (MIT)", "footer.repo": "Quellcode", "footer.releases": "Alle Releases", "footer.license": "Lizenz" },
+  fr: { "nav.why": "Pourquoi", "nav.shots": "Captures", "nav.features": "Fonctions", "nav.install": "Installation", "nav.status": "État", "hero.eyebrow": "Autonomie encadrée pour les tâches longues", "hero.title": "Un poste de travail d'agent qui montre son travail.", "hero.download": "Télécharger pour Windows", "hero.github": "Voir le code", "facts.langs": "20 langues d'interface", "facts.license": "Licence MIT", "facts.byok": "Votre propre clé", "why.title": "Pourquoi ce projet", "shots.title": "Captures d'écran", "features.title": "Ce qu'il fait", "honest.title": "Honnête par construction", "install.title": "Installation", "install.lead": "Un fichier, aucune runtime à installer.", "install.button": "Télécharger", "install.first.title": "Premier lancement", "install.unsigned.title": "À propos de l'avertissement", "status.title": "État et limites", "status.verified": "Vérifié aujourd'hui", "status.unverified": "Non vérifié — ne pas affirmer", "footer.built": "Basé sur OpenCode (MIT)", "footer.repo": "Code", "footer.releases": "Toutes les versions", "footer.license": "Licence" },
+  es: { "nav.why": "Por qué", "nav.shots": "Capturas", "nav.features": "Funciones", "nav.install": "Instalar", "nav.status": "Estado", "hero.eyebrow": "Autonomía acotada para tareas largas", "hero.title": "Una estación de agentes que muestra su trabajo.", "hero.download": "Descargar para Windows", "hero.github": "Ver código", "facts.langs": "20 idiomas de interfaz", "facts.license": "Licencia MIT", "facts.byok": "Tu propia clave", "why.title": "Por qué existe", "shots.title": "Capturas", "features.title": "Qué hace", "honest.title": "Honesto por construcción", "install.title": "Instalar", "install.lead": "Un archivo, sin runtime previo.", "install.button": "Descargar", "install.first.title": "Primer inicio", "install.unsigned.title": "Sobre el aviso", "status.title": "Estado y límites", "status.verified": "Verificado hoy", "status.unverified": "No verificado — no afirmar", "footer.built": "Basado en OpenCode (MIT)", "footer.repo": "Código", "footer.releases": "Todas las versiones", "footer.license": "Licencia" },
+  br: { "nav.why": "Por quê", "nav.shots": "Capturas", "nav.features": "Recursos", "nav.install": "Instalar", "nav.status": "Estado", "hero.eyebrow": "Autonomia limitada para tarefas longas", "hero.title": "Uma estação de agentes que mostra o seu trabalho.", "hero.download": "Baixar para Windows", "hero.github": "Ver código", "facts.langs": "20 idiomas de interface", "facts.license": "Licença MIT", "facts.byok": "Sua própria chave", "why.title": "Por que existe", "shots.title": "Capturas", "features.title": "O que faz", "honest.title": "Honesto por construção", "install.title": "Instalar", "install.lead": "Um arquivo, sem runtime para instalar antes.", "install.button": "Baixar", "install.first.title": "Primeira execução", "install.unsigned.title": "Sobre o aviso", "status.title": "Estado e limites", "status.verified": "Verificado hoje", "status.unverified": "Não verificado — não afirmar", "footer.built": "Baseado no OpenCode (MIT)", "footer.repo": "Código", "footer.releases": "Todas as versões", "footer.license": "Licença" },
+  ru: { "nav.why": "Зачем", "nav.shots": "Скриншоты", "nav.features": "Возможности", "nav.install": "Установка", "nav.status": "Статус", "hero.eyebrow": "Ограниченная автономия для долгих задач", "hero.title": "Рабочая станция агента, которая показывает свою работу.", "hero.download": "Скачать для Windows", "hero.github": "Исходный код", "facts.langs": "20 языков интерфейса", "facts.license": "Лицензия MIT", "facts.byok": "Свой ключ", "why.title": "Зачем это", "shots.title": "Скриншоты", "features.title": "Что умеет", "honest.title": "Честность в реализации", "install.title": "Установка", "install.lead": "Один файл, среда не нужна.", "install.button": "Скачать", "install.first.title": "Первый запуск", "install.unsigned.title": "О предупреждении", "status.title": "Статус и границы", "status.verified": "Проверено", "status.unverified": "Не проверено — не заявлять", "footer.built": "На базе OpenCode (MIT)", "footer.repo": "Код", "footer.releases": "Все релизы", "footer.license": "Лицензия" },
+  it: { "nav.why": "Perché", "nav.shots": "Schermate", "nav.features": "Funzioni", "nav.install": "Installa", "nav.status": "Stato", "hero.eyebrow": "Autonomia limitata per attività lunghe", "hero.title": "Una workstation per agenti che mostra il suo lavoro.", "hero.download": "Scarica per Windows", "hero.github": "Vedi il codice", "facts.langs": "20 lingue UI", "facts.license": "Licenza MIT", "facts.byok": "Chiave propria", "why.title": "Perché esiste", "shots.title": "Schermate", "features.title": "Cosa fa", "honest.title": "Onesto per costruzione", "install.title": "Installa", "install.lead": "Un file, nessun runtime da installare.", "install.button": "Scarica", "install.first.title": "Primo avvio", "install.unsigned.title": "Sull'avviso", "status.title": "Stato e limiti", "status.verified": "Verificato oggi", "status.unverified": "Non verificato — non affermare", "footer.built": "Basato su OpenCode (MIT)", "footer.repo": "Codice", "footer.releases": "Tutte le versioni", "footer.license": "Licenza" },
+  nl: { "nav.why": "Waarom", "nav.shots": "Screenshots", "nav.features": "Functies", "nav.install": "Installeren", "nav.status": "Status", "hero.eyebrow": "Begrensde autonomie voor lange taken", "hero.title": "Een agent-werkstation dat zijn werk toont.", "hero.download": "Download voor Windows", "hero.github": "Broncode", "facts.langs": "20 UI-talen", "facts.license": "MIT-licentie", "facts.byok": "Eigen sleutel", "why.title": "Waarom dit bestaat", "shots.title": "Screenshots", "features.title": "Wat het doet", "honest.title": "Eerlijk door constructie", "install.title": "Installeren", "install.lead": "Eén bestand, geen runtime nodig.", "install.button": "Downloaden", "install.first.title": "Eerste start", "install.unsigned.title": "Over de waarschuwing", "status.title": "Status en grenzen", "status.verified": "Vandaag geverifieerd", "status.unverified": "Niet geverifieerd — niet beweren", "footer.built": "Gebouwd op OpenCode (MIT)", "footer.repo": "Broncode", "footer.releases": "Alle releases", "footer.license": "Licentie" },
+  pl: { "nav.why": "Dlaczego", "nav.shots": "Zrzuty", "nav.features": "Funkcje", "nav.install": "Instalacja", "nav.status": "Status", "hero.eyebrow": "Ograniczona autonomia dla długich zadań", "hero.title": "Stacja robocza agenta, która pokazuje swoją pracę.", "hero.download": "Pobierz dla Windows", "hero.github": "Kod źródłowy", "facts.langs": "20 języków interfejsu", "facts.license": "Licencja MIT", "facts.byok": "Własny klucz", "why.title": "Dlaczego istnieje", "shots.title": "Zrzuty ekranu", "features.title": "Co robi", "honest.title": "Uczciwość w kodzie", "install.title": "Instalacja", "install.lead": "Jeden plik, bez środowiska.", "install.button": "Pobierz", "install.first.title": "Pierwsze uruchomienie", "install.unsigned.title": "O ostrzeżeniu", "status.title": "Status i granice", "status.verified": "Zweryfikowane", "status.unverified": "Niezweryfikowane — nie twierdzić", "footer.built": "Na bazie OpenCode (MIT)", "footer.repo": "Kod", "footer.releases": "Wszystkie wydania", "footer.license": "Licencja" },
+  tr: { "nav.why": "Neden", "nav.shots": "Ekran görüntüleri", "nav.features": "Özellikler", "nav.install": "Kurulum", "nav.status": "Durum", "hero.eyebrow": "Uzun görevler için sınırlı özerklik", "hero.title": "İşini gösteren bir ajan çalışma istasyonu.", "hero.download": "Windows için indir", "hero.github": "Kaynak kodu", "facts.langs": "20 arayüz dili", "facts.license": "MIT lisansı", "facts.byok": "Kendi anahtarınız", "why.title": "Neden var", "shots.title": "Ekran görüntüleri", "features.title": "Ne yapar", "honest.title": "Tasarımı gereği dürüst", "install.title": "Kurulum", "install.lead": "Tek dosya, çalışma zamanı gerekmez.", "install.button": "İndir", "install.first.title": "İlk çalıştırma", "install.unsigned.title": "Uyarı hakkında", "status.title": "Durum ve sınırlar", "status.verified": "Doğrulandı", "status.unverified": "Doğrulanmadı — iddia etmeyin", "footer.built": "OpenCode (MIT) üzerine kurulu", "footer.repo": "Kaynak", "footer.releases": "Tüm sürümler", "footer.license": "Lisans" },
+  ar: { "nav.why": "لماذا", "nav.shots": "لقطات", "nav.features": "الميزات", "nav.install": "التثبيت", "nav.status": "الحالة", "hero.eyebrow": "استقلالية محدودة للمهام الطويلة", "hero.title": "محطة عمل للوكيل تُظهر عملها.", "hero.download": "تنزيل لويندوز", "hero.github": "الشيفرة المصدرية", "facts.langs": "20 لغة للواجهة", "facts.license": "رخصة MIT", "facts.byok": "مفتاحك الخاص", "why.title": "لماذا وُجد", "shots.title": "لقطات الشاشة", "features.title": "ماذا يفعل", "honest.title": "الصدق في التصميم", "install.title": "التثبيت", "install.lead": "ملف واحد، بلا بيئة تشغيل مسبقة.", "install.button": "تنزيل", "install.first.title": "التشغيل الأول", "install.unsigned.title": "حول التحذير", "status.title": "الحالة والحدود", "status.verified": "تم التحقق", "status.unverified": "غير مُتحقَّق — لا تدّعِ", "footer.built": "مبني على OpenCode (MIT)", "footer.repo": "الشيفرة", "footer.releases": "كل الإصدارات", "footer.license": "الرخصة" },
+  hi: { "nav.why": "क्यों", "nav.shots": "स्क्रीनशॉट", "nav.features": "विशेषताएँ", "nav.install": "इंस्टॉल", "nav.status": "स्थिति", "hero.eyebrow": "लंबे कामों के लिए सीमित स्वायत्तता", "hero.title": "एक एजेंट वर्कस्टेशन जो अपना काम दिखाता है।", "hero.download": "Windows के लिए डाउनलोड", "hero.github": "सोर्स देखें", "facts.langs": "20 UI भाषाएँ", "facts.license": "MIT लाइसेंस", "facts.byok": "अपनी कुंजी", "why.title": "यह क्यों है", "shots.title": "स्क्रीनशॉट", "features.title": "यह क्या करता है", "honest.title": "रचना से ईमानदार", "install.title": "इंस्टॉल", "install.lead": "एक फ़ाइल, कोई रनटाइम पहले नहीं।", "install.button": "डाउनलोड", "install.first.title": "पहला रन", "install.unsigned.title": "चेतावनी के बारे में", "status.title": "स्थिति और सीमाएँ", "status.verified": "सत्यापित", "status.unverified": "असत्यापित — दावा न करें", "footer.built": "OpenCode (MIT) पर बना", "footer.repo": "सोर्स", "footer.releases": "सभी रिलीज़", "footer.license": "लाइसेंस" },
+  vi: { "nav.why": "Vì sao", "nav.shots": "Ảnh chụp", "nav.features": "Tính năng", "nav.install": "Cài đặt", "nav.status": "Trạng thái", "hero.eyebrow": "Tự chủ có giới hạn cho tác vụ dài", "hero.title": "Một workstation agent cho thấy việc nó làm.", "hero.download": "Tải cho Windows", "hero.github": "Xem mã nguồn", "facts.langs": "20 ngôn ngữ giao diện", "facts.license": "Giấy phép MIT", "facts.byok": "Khoá của bạn", "why.title": "Vì sao tồn tại", "shots.title": "Ảnh chụp màn hình", "features.title": "Nó làm gì", "honest.title": "Trung thực từ thiết kế", "install.title": "Cài đặt", "install.lead": "Một tệp, không cần runtime.", "install.button": "Tải xuống", "install.first.title": "Lần chạy đầu", "install.unsigned.title": "Về cảnh báo", "status.title": "Trạng thái và giới hạn", "status.verified": "Đã xác minh", "status.unverified": "Chưa xác minh — đừng khẳng định", "footer.built": "Dựa trên OpenCode (MIT)", "footer.repo": "Mã nguồn", "footer.releases": "Tất cả bản phát hành", "footer.license": "Giấy phép" },
+  th: { "nav.why": "ทำไม", "nav.shots": "ภาพหน้าจอ", "nav.features": "คุณสมบัติ", "nav.install": "ติดตั้ง", "nav.status": "สถานะ", "hero.eyebrow": "อัตโนมัติแบบมีขอบเขตสำหรับงานยาว", "hero.title": "เวิร์กสเตชันเอเจนต์ที่แสดงงานของตัวเอง", "hero.download": "ดาวน์โหลดสำหรับ Windows", "hero.github": "ดูซอร์สโค้ด", "facts.langs": "20 ภาษาของ UI", "facts.license": "สัญญาอนุญาต MIT", "facts.byok": "คีย์ของคุณเอง", "why.title": "ทำไมจึงมี", "shots.title": "ภาพหน้าจอ", "features.title": "มันทำอะไร", "honest.title": "ซื่อสัตย์โดยการออกแบบ", "install.title": "ติดตั้ง", "install.lead": "ไฟล์เดียว ไม่ต้องติดตั้งรันไทม์", "install.button": "ดาวน์โหลด", "install.first.title": "การรันครั้งแรก", "install.unsigned.title": "เกี่ยวกับคำเตือน", "status.title": "สถานะและขอบเขต", "status.verified": "ตรวจสอบแล้ว", "status.unverified": "ยังไม่ตรวจสอบ — อย่ากล่าวอ้าง", "footer.built": "สร้างบน OpenCode (MIT)", "footer.repo": "ซอร์ส", "footer.releases": "ทุกเวอร์ชัน", "footer.license": "สัญญาอนุญาต" },
+  id: { "nav.why": "Mengapa", "nav.shots": "Tangkapan layar", "nav.features": "Fitur", "nav.install": "Pasang", "nav.status": "Status", "hero.eyebrow": "Otonomi terbatas untuk tugas panjang", "hero.title": "Workstation agen yang memperlihatkan kerjanya.", "hero.download": "Unduh untuk Windows", "hero.github": "Lihat sumber", "facts.langs": "20 bahasa UI", "facts.license": "Lisensi MIT", "facts.byok": "Kunci Anda sendiri", "why.title": "Mengapa ada", "shots.title": "Tangkapan layar", "features.title": "Apa yang dilakukannya", "honest.title": "Jujur sejak dirancang", "install.title": "Pasang", "install.lead": "Satu berkas, tanpa runtime.", "install.button": "Unduh", "install.first.title": "Jalankan pertama", "install.unsigned.title": "Tentang peringatan", "status.title": "Status dan batasan", "status.verified": "Terverifikasi", "status.unverified": "Belum terverifikasi — jangan klaim", "footer.built": "Dibangun di atas OpenCode (MIT)", "footer.repo": "Sumber", "footer.releases": "Semua rilis", "footer.license": "Lisensi" },
+  uk: { "nav.why": "Чому", "nav.shots": "Скріншоти", "nav.features": "Можливості", "nav.install": "Встановлення", "nav.status": "Статус", "hero.eyebrow": "Обмежена автономія для довгих задач", "hero.title": "Робоча станція агента, що показує свою роботу.", "hero.download": "Завантажити для Windows", "hero.github": "Вихідний код", "facts.langs": "20 мов інтерфейсу", "facts.license": "Ліцензія MIT", "facts.byok": "Власний ключ", "why.title": "Навіщо це", "shots.title": "Скріншоти", "features.title": "Що вміє", "honest.title": "Чесність у реалізації", "install.title": "Встановлення", "install.lead": "Один файл, середовище не потрібне.", "install.button": "Завантажити", "install.first.title": "Перший запуск", "install.unsigned.title": "Про попередження", "status.title": "Статус і межі", "status.verified": "Перевірено", "status.unverified": "Не перевірено — не заявляти", "footer.built": "На базі OpenCode (MIT)", "footer.repo": "Код", "footer.releases": "Усі релізи", "footer.license": "Ліцензія" },
 }
 
 const STRINGS = { en: EN, zh: ZH, zht: ZHT, ja: JA, ko: KO }
 for (const code of Object.keys(SHORT)) STRINGS[code] = { ...EN, ...SHORT[code] }
+
+// Public copy must describe evidence, not freeze a past test run as "verified today".
+const CURRENT_COPY = {
+  en: {
+    "hero.sub": "An OpenCode-based desktop workstation for coding, planning and coordinated tasks. Keep your session history, tools and permissions while inspecting real context, cache, token and cost records.",
+    "hero.downloadMeta": "Release assets",
+    "facts.langs": "29 app locales · 20 website choices",
+    "install.win.body": "Installer and portable assets: see the selected release for version, size and checksums.",
+    "install.mac.body": "Build the desktop application from source with the repository's macOS packaging command.",
+    "install.linux.body": "Build from source with the repository's Linux packaging command.",
+    "features.self": "Reusable skills",
+    "features.self.body": "The agent can propose a reusable skill with provenance. Candidates remain STAGED until reviewed and adopted; generating a file is not automatic skill evolution.",
+    "features.goal.body": "Goal stores acceptance criteria, budgets and deadlines and can continue through real sessions. An evidence gate checks completion records.",
+    "why.bounded.body": "Goal stores criteria, budgets and deadlines. Loop provides run limits, scheduling and a lease for each pass.",
+    "honest.numbers.body": "Context, cache, token and cost displays use provider usage records, with separate labels for model estimates and billed costs.",
+    "honest.progress.body": "Task records include child sessions, results and stop reasons. Failed turns are surfaced to the parent task.",
+    "status.title": "Latest updates",
+    "status.verified": "Workbench and runtime",
+    "status.unverified": "Skill Store",
+    "status.v1": "2026-10-03: refreshed product screenshots, architecture and direct English, Simplified Chinese and French guides.",
+    "status.v2": "Provider fallback history is stored and can be inspected after a page reload.",
+    "status.v3": "Improved text contrast, model availability labels and sidebar sizing.",
+    "status.u1": "Repeating a Markdown Skill update succeeds without rewriting unchanged content.",
+    "status.u2": "Network and update-check errors are displayed separately from available updates.",
+    "status.u3": "Optional workspace-level checks run when the installed page opens; you choose when to install.",
+    "hero.imageNote": "Packaged workbench screenshot, 2026-10-03, with an isolated demonstration configuration.",
+    "guide.languages": "All interface languages",
+    "architecture.title": "Architecture",
+    "architecture.lead": "One session engine, not a second simulated agent behind the UI.",
+    "architecture.shell": "Projects, Composer, task board, tools, live context/cache/cost.",
+    "architecture.core": "Sessions and event streams, providers, permissions, files, Git, terminal.",
+    "architecture.runtime": "Bounded Goal/Loop/Team, skill provenance, memory, Computer Use adapters.",
+  },
+  zh: {
+    "hero.sub": "基于 OpenCode 的桌面 Agent 工作台，用于编码、计划和团队任务。保留真实会话、工具和权限，让上下文、缓存命中、Token 和费用有据可查。",
+    "hero.downloadMeta": "查看发布附件",
+    "facts.langs": "应用 29 种语言 · 网站 20 个选项",
+    "install.win.body": "安装版和便携版：版本、大小与校验信息以对应 Release 为准。",
+    "install.mac.body": "使用仓库中的 macOS 打包命令从源码构建桌面应用。",
+    "install.linux.body": "使用仓库中的 Linux 打包命令从源码构建。",
+    "features.self": "可复用 Skill",
+    "features.self.body": "Agent 可以提出带来源记录的可复用 Skill。候选保持 STAGED，审查和采纳后才能启用；生成文件不等于自动进化。",
+    "features.goal.body": "Goal 保存验收标准、预算和截止时间，可通过真实会话续跑。证据闸门检查完成记录。",
+    "why.bounded.body": "Goal 保存目标标准、预算和截止时间；Loop 提供轮次限制、调度和单轮执行租约。",
+    "honest.numbers.body": "上下文、缓存、Token 和费用来自 Provider 用量记录，模型估价与实际账单分别标注。",
+    "honest.progress.body": "任务记录包含子会话、结果和停止原因，失败回合会明确反馈给父任务。",
+    "status.title": "本次更新",
+    "status.verified": "工作台与运行记录",
+    "status.unverified": "Skill Store",
+    "status.v1": "2026-10-03：更新产品截图、架构介绍与可直接跳转的中英法文指南。",
+    "status.v2": "Provider 回退历史持久保存，刷新后可以查看切换记录。",
+    "status.v3": "优化文字对比度、模型可用状态标签和侧栏尺寸。",
+    "status.u1": "重复更新 Markdown Skill 可以正常成功，不重复写入未改变的内容。",
+    "status.u2": "网络错误、检查失败与可更新状态分开展示。",
+    "status.u3": "自动检查按工作区配置，打开已安装页时执行，安装时机由用户决定。",
+    "hero.imageNote": "2026-10-03 打包工作台截图，使用隔离演示配置。",
+    "guide.languages": "全部界面语言",
+    "architecture.title": "架构与边界",
+    "architecture.lead": "一个真实会话引擎，不在界面后另造一套假 Agent。",
+    "architecture.shell": "项目、输入框、任务看板、工具，以及实时上下文、缓存和费用。",
+    "architecture.core": "会话与事件流、Provider、权限、文件、Git 和终端。",
+    "architecture.runtime": "有边界的 Goal、Loop、团队，Skill 来源记录、记忆和电脑操作适配器。",
+  },
+  fr: {
+    "hero.sub": "Un poste de travail basé sur OpenCode pour le code, la planification et les équipes d’agents. Sessions, outils et permissions réels, avec contexte, cache, tokens et coûts observables.",
+    "hero.downloadMeta": "Fichiers de la version",
+    "facts.langs": "29 langues dans l’application · 20 sur le site",
+    "install.win.body": "Installation et version portable : voir la version publiée pour taille et sommes de contrôle.",
+    "install.mac.body": "Compilez l’application depuis les sources avec la commande macOS du dépôt.",
+    "install.linux.body": "Compilez depuis les sources avec la commande Linux du dépôt.",
+    "features.self": "Skills réutilisables",
+    "features.self.body": "L’agent propose des skills avec provenance. Ils restent STAGED jusqu’à leur examen et adoption ; un fichier généré n’est pas une évolution automatique.",
+    "features.goal.body": "Goal conserve critères, budget et échéance et peut reprendre des sessions réelles. Une porte de validation contrôle les preuves.",
+    "why.bounded.body": "Goal conserve critères, budgets et échéances. Loop fournit limites, planification et bail par exécution.",
+    "honest.numbers.body": "Contexte, cache, tokens et coûts utilisent les relevés des fournisseurs ; estimations et facturation sont distinguées.",
+    "honest.progress.body": "Les tâches conservent sessions enfants, résultats et motifs d’arrêt. Les échecs remontent à la tâche parente.",
+    "status.title": "Dernières mises à jour",
+    "status.verified": "Interface et exécution",
+    "status.unverified": "Skill Store",
+    "status.v1": "2026-10-03 : captures, architecture et guides directs en anglais, chinois simplifié et français.",
+    "status.v2": "L’historique de repli des fournisseurs est conservé après rechargement.",
+    "status.v3": "Contraste, disponibilité des modèles et dimensions de la barre latérale améliorés.",
+    "status.u1": "Les mises à jour répétées des skills Markdown réussissent sans réécrire le contenu inchangé.",
+    "status.u2": "Les erreurs réseau sont distinguées des mises à jour disponibles.",
+    "status.u3": "Vérification facultative par espace de travail à l’ouverture ; installation à votre demande.",
+    "hero.imageNote": "Capture du paquet du 2026-10-03 avec une configuration de démonstration isolée.",
+    "guide.languages": "Toutes les langues de l’interface",
+    "architecture.title": "Architecture",
+    "architecture.lead": "Un seul moteur de session, sans agent simulé derrière l’interface.",
+    "architecture.shell": "Projets, saisie, tableau des tâches, outils, contexte/cache/coût en direct.",
+    "architecture.core": "Sessions, événements, fournisseurs, permissions, fichiers, Git et terminal.",
+    "architecture.runtime": "Goal/Loop/Team bornés, provenance des skills, mémoire, adaptateurs Computer Use.",
+  },
+}
+for (const code of Object.keys(STRINGS)) {
+  Object.assign(STRINGS[code], CURRENT_COPY.en, CURRENT_COPY[code] || {})
+}
 
 const LANGS = [
   ["en", "English"],
@@ -453,7 +550,7 @@ const LANGS = [
   ["de", "Deutsch"],
   ["fr", "Français"],
   ["es", "Español"],
-  ["pt", "Português"],
+  ["br", "Português (Brasil)"],
   ["ru", "Русский"],
   ["it", "Italiano"],
   ["nl", "Nederlands"],
@@ -476,12 +573,13 @@ for (const [code, label] of LANGS) {
 }
 
 function apply(code) {
+  if (!LANGS.some(([value]) => value === code)) code = "en"
   const dict = STRINGS[code] || STRINGS.en
   document.querySelectorAll("[data-i18n]").forEach((node) => {
     const value = dict[node.getAttribute("data-i18n")]
     if (typeof value === "string") node.textContent = value
   })
-  document.documentElement.lang = code
+  document.documentElement.lang = { zh: "zh-CN", zht: "zh-TW", br: "pt-BR" }[code] || code
   document.documentElement.dir = code === "ar" ? "rtl" : "ltr"
   select.value = code
   try {
@@ -491,10 +589,14 @@ function apply(code) {
 
 select.addEventListener("change", () => apply(select.value))
 
-// Default English; only an explicit earlier choice overrides it.
-let initial = "en"
+// Explicit URL wins over the saved choice; first visits follow the browser language.
+const browserLocale = (navigator.language || "en").toLowerCase()
+let initial = browserLocale.startsWith("zh") ? (/tw|hk|hant/.test(browserLocale) ? "zht" : "zh")
+  : browserLocale.startsWith("pt") ? "br" : browserLocale.split("-")[0]
 try {
   const saved = localStorage.getItem("deveagent-site-lang")
   if (saved && LANGS.some(([code]) => code === saved)) initial = saved
 } catch {}
+const requested = new URLSearchParams(location.search).get("lang")
+if (requested && LANGS.some(([code]) => code === requested)) initial = requested
 apply(initial)

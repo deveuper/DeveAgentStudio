@@ -10,8 +10,10 @@ export function DeveAgentMarkItDownStatus(props: { events: DeveAgentMarkItDownEv
   return (
     <div class="rounded-lg border border-v2-border-border-muted bg-v2-background-bg-layer-01 p-3">
       <div class="flex items-center justify-between gap-2">
-        <div class="text-[11px] font-[520] uppercase tracking-wide text-v2-text-text-muted">{language.t("deveagent.markitdown.title")}</div>
-        <div class="text-[10px] text-v2-text-text-faint">{language.t("deveagent.markitdown.sessionMetadata")}</div>
+        <div class="min-w-0 truncate text-[11px] font-[520] uppercase tracking-wide text-v2-text-text-muted">{language.t("deveagent.markitdown.title")}</div>
+        {/* shrink-0: at the rail's 240px floor this label wrapped mid-word
+            ("会话元数 / 据") because the flex row let it shrink. */}
+        <div data-component="deveagent-markitdown-session-metadata" class="shrink-0 text-[10px] text-v2-text-text-faint">{language.t("deveagent.markitdown.sessionMetadata")}</div>
       </div>
       <Show
         when={latest()}

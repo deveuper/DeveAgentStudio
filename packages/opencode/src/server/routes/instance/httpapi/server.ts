@@ -55,6 +55,7 @@ import { Snapshot } from "@/snapshot"
 import { Storage } from "@/storage/storage"
 import { Tool } from "@/tool/tool"
 import { ToolRegistry } from "@/tool/registry"
+import { ChildTurnError } from "@/tool/task-errors"
 import type { TaskPromptOps } from "@/tool/task"
 import { Truncate } from "@/tool/truncate"
 import { Worktree } from "@/worktree"
@@ -437,7 +438,7 @@ const deveagentMetricsRoute = HttpRouter.use((router) =>
                     const message = typeof childError === "string"
                       ? childError
                       : ((childError as { message?: unknown }).message as string | undefined) ?? "Child session turn errored"
-                    return yield* Effect.fail(Object.assign(new Error(message.slice(0, 200)), { childTurnError: true }))
+                    return yield* Effect.fail(new ChildTurnError(message.slice(0, 200)))
                   }
                 }
                 return {
@@ -1082,6 +1083,23 @@ const deveagentMetricsRoute = HttpRouter.use((router) =>
         return HttpServerResponse.jsonUnsafe({ runs })
       }).pipe(Effect.catch(() => Effect.succeed(HttpServerResponse.jsonUnsafe({ runs: [] })))),
     )
+    yield* router.add("POST", "/api/deveagent/fallbacks", () =>
+      Effect.gen(function* () {
+        const request = yield* HttpServerRequest.HttpServerRequest
+        const body = yield* Effect.orDie(request.text)
+        const payload = JSON.parse(body || "{}")
+        const { readProviderFallbacks } = yield* Effect.promise(() => import("../../../../plugin/deveagent-fallbacks"))
+        const limit = typeof payload.limit === "number" ? payload.limit : 50
+        const fallbacks = yield* Effect.promise(() =>
+          readProviderFallbacks({
+            directory: typeof payload.directory === "string" ? payload.directory : undefined,
+            sessionID: typeof payload.sessionID === "string" ? payload.sessionID : undefined,
+            limit,
+          }),
+        )
+        return HttpServerResponse.jsonUnsafe({ fallbacks })
+      }).pipe(Effect.catch(() => Effect.succeed(HttpServerResponse.jsonUnsafe({ fallbacks: [] })))),
+    )
     yield* router.add("POST", "/api/deveagent/cu-level", () =>
       Effect.gen(function* () {
         const request = yield* HttpServerRequest.HttpServerRequest
@@ -1320,12 +1338,24 @@ const deveagentMetricsRoute = HttpRouter.use((router) =>
         const request = yield* HttpServerRequest.HttpServerRequest
         const body = yield* Effect.orDie(request.text)
         const payload = JSON.parse(body || "{}")
-        const { verifyGoal } = yield* Effect.promise(() => import("../../../../plugin/deveagent"))
-        return HttpServerResponse.jsonUnsafe(verifyGoal({
-          met: payload.met === true,
-          reason: payload.reason,
-          sessionID: typeof payload.sessionID === "string" ? payload.sessionID : undefined,
-        }))
+        const { verifyGoal, verifyGoalWithEvidence } = yield* Effect.promise(() => import("../../../../plugin/deveagent"))
+        const sessionID = typeof payload.sessionID === "string" ? payload.sessionID : undefined
+        // R7: this route used to call verifyGoal directly, so anything reaching
+        // it skipped the evidence gate that the goal-verify TOOL enforces — a
+        // second, ungated way to mark a goal verified. It now runs the same
+        // gate; only an explicitly user-sourced confirmation is allowed to stand
+        // without evidence (the human checking boxes in the Goal panel).
+        if (payload.source === "user") {
+          return HttpServerResponse.jsonUnsafe(verifyGoal({ met: payload.met === true, reason: payload.reason, sessionID, source: "user" }))
+        }
+        return HttpServerResponse.jsonUnsafe(
+          verifyGoalWithEvidence({
+            met: payload.met === true,
+            reason: payload.reason,
+            sessionID,
+            evidence: Array.isArray(payload.evidence) ? payload.evidence : [],
+          }),
+        )
       }).pipe(Effect.catch(() => Effect.succeed(HttpServerResponse.jsonUnsafe({ error: "invalid verify" }, { status: 400 }))))
     )
     yield* router.add("POST", "/api/deveagent/goal/draft", () =>

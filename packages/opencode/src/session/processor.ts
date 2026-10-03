@@ -962,6 +962,18 @@ export const layer = Layer.effect(
           sessionID: ctx.assistantMessage.sessionID,
           error: ctx.assistantMessage.error,
         })
+        // Persist the error here, not only in cleanup().
+        //
+        // cleanup() runs under `Effect.ensuring` after this, but its single
+        // `updateMessage` is its LAST statement, behind a snapshot patch, part
+        // updates and a 250ms tool-call timeout — any of which failing leaves
+        // the message on disk without `error`. Downstream (the team wait seams
+        // in tool/task.ts, tool/registry.ts and the httpapi server route) judge
+        // a child turn by re-reading the persisted message, so an unpersisted
+        // error makes a failed child look successful. Writing it here is the
+        // minimal fix: it does not reorder cleanup(), and a second identical
+        // update is harmless.
+        yield* session.updateMessage(ctx.assistantMessage).pipe(Effect.ignore)
         yield* status.set(ctx.sessionID, { type: "idle" })
       })
 

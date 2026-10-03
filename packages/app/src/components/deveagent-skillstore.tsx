@@ -7,7 +7,7 @@ import { useServerSDK } from "@/context/server-sdk"
 import { usePlatform } from "@/context/platform"
 import { useLanguage } from "@/context/language"
 import { DeveagentMcpMarket } from "@/components/deveagent-mcp-market"
-import { skillStoreSaveError } from "@/components/deveagent-skillstore-state"
+import { skillStoreSaveError, summarizeSkillUpdates } from "@/components/deveagent-skillstore-state"
 import {
   DEVEAGENT_BUILTIN_SKILLS,
   isRemoteSkillSource,
@@ -286,6 +286,17 @@ export function DeveagentSkillStore(props: { initialTab?: Extract<SkillStoreTab,
   const [skillUpdates, setSkillUpdates] = createSignal<Record<string, SkillUpdateInfo>>({})
   const [checkingUpdates, setCheckingUpdates] = createSignal(false)
   const [updatingSkill, setUpdatingSkill] = createSignal<string | null>(null)
+  const autoCheckKey = () => `deveagent.skill-updates.auto:${encodeURIComponent(sdk().directory)}`
+  const [autoCheck, setAutoCheck] = createSignal(false)
+  createEffect(() => {
+    const key = autoCheckKey()
+    setSkillUpdates({})
+    try { setAutoCheck(localStorage.getItem(key) === "true") } catch { setAutoCheck(false) }
+  })
+  const changeAutoCheck = (enabled: boolean) => {
+    setAutoCheck(enabled)
+    try { localStorage.setItem(autoCheckKey(), String(enabled)) } catch {}
+  }
   // Custom skill editor state: null = closed, "new" = creating, otherwise editing existing id
   const [editingSkill, setEditingSkill] = createSignal<string | "new" | null>(null)
   const [skillFormName, setSkillFormName] = createSignal("")
@@ -469,29 +480,45 @@ export function DeveagentSkillStore(props: { initialTab?: Extract<SkillStoreTab,
     showToast({ title: language.t("deveagent.skillstore.remoteSkillRemoved"), description: id })
   }
 
-  const checkSkillUpdates = async () => {
+  const checkSkillUpdates = async (quiet = false) => {
     if (checkingUpdates()) return
+    const directory = sdk().directory
     setCheckingUpdates(true)
     try {
       const response = await serverSDK().fetch(`${serverSDK().url.replace(/\/+$/, "")}/api/deveagent/skill/check-updates`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ directory: sdk().directory }),
+        body: JSON.stringify({ directory }),
       })
-      const results = (await response.json().catch(() => [])) as { id: string; upToDate: boolean; error?: string }[]
-      if (!response.ok || !Array.isArray(results)) throw new Error(`HTTP ${response.status}`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const { results, outdated, failed } = summarizeSkillUpdates(await response.json())
+      if (sdk().directory !== directory) return
       setSkillUpdates(Object.fromEntries(results.map((item) => [item.id, { upToDate: item.upToDate, error: item.error }])))
-      const outdated = results.filter((item) => !item.upToDate && !item.error).length
-      showToast({
-        title: language.t("deveagent.skillstore.updateCheckFinished"),
-        description: outdated > 0 ? language.t("deveagent.skillstore.outdatedCount", { count: outdated }) : language.t("deveagent.skillstore.allUpToDate"),
-      })
+      if (!quiet || outdated > 0 || failed > 0) {
+        showToast({
+          variant: failed > 0 ? "error" : undefined,
+          title: language.t(failed > 0 ? "deveagent.skillstore.updateCheckFailed" : "deveagent.skillstore.updateCheckFinished"),
+          description: failed > 0
+            ? results.filter((item) => item.error).map((item) => `${item.id}: ${item.error}`).join("; ").slice(0, 500)
+            : outdated > 0 ? language.t("deveagent.skillstore.outdatedCount", { count: outdated }) : language.t("deveagent.skillstore.allUpToDate"),
+        })
+      }
     } catch (error) {
       showToast({ variant: "error", title: language.t("deveagent.skillstore.updateCheckFailed"), description: error instanceof Error ? error.message : language.t("deveagent.skillstore.requestFailed") })
     } finally {
       setCheckingUpdates(false)
     }
   }
+
+  // Check only while the Store is open. Never install updates without a user action.
+  const autoChecked = new Set<string>()
+  createEffect(() => {
+    const directory = sdk().directory
+    if (!autoCheck() || !remoteSkills() || activeTab() !== "installed" || checkingUpdates() ||
+      remoteInstalled.loading || !(remoteInstalled() ?? []).length || autoChecked.has(directory)) return
+    autoChecked.add(directory)
+    void checkSkillUpdates(true)
+  })
 
   const updateSkill = async (id: string) => {
     if (updatingSkill()) return
@@ -586,7 +613,7 @@ export function DeveagentSkillStore(props: { initialTab?: Extract<SkillStoreTab,
             <button
               type="button"
               data-action={`deveagent-markitdown-mode-${mode}`}
-              class={`rounded px-1.5 py-0.5 text-[11px] ${markitdownMode() === mode ? "bg-v2-background-bg-accent/15 text-v2-text-text-accent" : "text-v2-text-text-muted hover:text-v2-text-text-base"}`}
+              class={`rounded px-1.5 py-0.5 text-[11px] ${markitdownMode() === mode ? "[background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse" : "text-v2-text-text-muted hover:text-v2-text-text-base"}`}
               disabled={markitdownModeLoading()}
               onClick={() => void changeMarkitdownMode(mode)}
             >
@@ -610,7 +637,7 @@ export function DeveagentSkillStore(props: { initialTab?: Extract<SkillStoreTab,
             type="button"
             data-action={`skill-store-tab-${tab.id}`}
             class={`px-3 py-1.5 rounded text-[12px] transition-colors ${
-              activeTab() === tab.id ? "border border-v2-border-border-focus bg-v2-background-bg-accent/10 text-v2-text-text-accent" : "border border-transparent bg-v2-background-bg-layer-02 text-v2-text-text-muted hover:text-v2-text-text-base"
+              activeTab() === tab.id ? "border border-transparent [background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse" : "border border-transparent bg-v2-background-bg-layer-02 text-v2-text-text-muted hover:text-v2-text-text-base"
             }`}
             onClick={() => {
               setActiveTab(tab.id)
@@ -624,7 +651,7 @@ export function DeveagentSkillStore(props: { initialTab?: Extract<SkillStoreTab,
         <Show when={activeTab() !== "mcp"}>
           <button
             type="button"
-            class="rounded border border-v2-border-border-focus bg-v2-background-bg-accent/10 px-3 py-1.5 text-[12px] font-medium text-v2-text-text-accent hover:bg-v2-background-bg-accent/15"
+            class="rounded border border-transparent [background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse px-3 py-1.5 text-[12px] font-medium hover:opacity-90"
             onClick={openNewSkill}
           >
             + {language.t("deveagent.skillstore.newSkill")}
@@ -672,7 +699,7 @@ export function DeveagentSkillStore(props: { initialTab?: Extract<SkillStoreTab,
             <div class="flex flex-wrap gap-1" role="group" aria-label={language.t("deveagent.skillstore.marketSources")}>
               <button
                 type="button"
-                class={`rounded border px-2 py-1 text-[10px] ${marketSource() === "all" ? "border-v2-border-border-focus bg-v2-background-bg-accent/10 text-v2-text-text-accent" : "border-v2-border-border-muted text-v2-text-text-muted hover:bg-surface-raised-base"}`}
+                class={`rounded border px-2 py-1 text-[10px] ${marketSource() === "all" ? "border border-transparent [background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse" : "border-v2-border-border-muted text-v2-text-text-muted hover:bg-surface-raised-base"}`}
                 data-action="skill-market-source-all"
                 aria-pressed={marketSource() === "all"}
                 onClick={() => setMarketSource("all")}
@@ -683,7 +710,7 @@ export function DeveagentSkillStore(props: { initialTab?: Extract<SkillStoreTab,
                 {(source) => (
                   <button
                     type="button"
-                    class={`rounded border px-2 py-1 text-[10px] ${marketSource() === source ? "border-v2-border-border-focus bg-v2-background-bg-accent/10 text-v2-text-text-accent" : "border-v2-border-border-muted text-v2-text-text-muted hover:bg-surface-raised-base"}`}
+                    class={`rounded border px-2 py-1 text-[10px] ${marketSource() === source ? "border border-transparent [background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse" : "border-v2-border-border-muted text-v2-text-text-muted hover:bg-surface-raised-base"}`}
                     data-action={`skill-market-source-${source}`}
                     aria-pressed={marketSource() === source}
                     onClick={() => setMarketSource(source)}
@@ -731,7 +758,7 @@ export function DeveagentSkillStore(props: { initialTab?: Extract<SkillStoreTab,
                   </div>
                   <span class={`rounded px-1.5 py-0.5 text-[9px] ${skill.risk === "trusted" ? "bg-v2-state-bg-success text-v2-state-fg-success" : skill.risk === "untrusted" ? "bg-v2-state-bg-danger text-v2-state-fg-danger" : "bg-v2-state-bg-warning text-v2-state-fg-warning"}`}>{riskLabel(skill.risk, chinese())}</span>
                   <Show when={installed()}>
-                    <span class={`rounded px-1.5 py-0.5 text-[9px] ${loaded() ? "bg-v2-background-bg-accent/15 text-v2-text-text-accent" : "bg-v2-state-bg-success text-v2-state-fg-success"}`}>
+                    <span class={`rounded px-1.5 py-0.5 text-[9px] ${loaded() ? "[background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse" : "bg-v2-state-bg-success text-v2-state-fg-success"}`}>
                       {loaded() ? (chinese() ? "已加载" : "Loaded") : (chinese() ? "已安装" : "Installed")}
                     </span>
                   </Show>
@@ -809,8 +836,11 @@ export function DeveagentSkillStore(props: { initialTab?: Extract<SkillStoreTab,
       <div data-component="deveagent-skillstore-scroll" class={`min-h-0 flex-1 overflow-y-scroll overscroll-contain pr-1 ${VISIBLE_SCROLLBAR}`}>
         <div class="flex flex-col gap-2 pb-2">
         <Show when={activeTab() === "installed" && (remoteInstalled() ?? []).length > 0}>
-          <div class="flex items-center justify-between gap-2 rounded-md border border-v2-border-border-muted bg-v2-background-bg-layer-02 px-2 py-1.5">
-            <span class="text-[11px] text-v2-text-text-muted">{language.t("deveagent.skillstore.updateFromSourceHint")}</span>
+          <div class="flex flex-wrap items-center justify-between gap-2 rounded-md border border-v2-border-border-muted bg-v2-background-bg-layer-02 px-2 py-1.5">
+            <label class="flex items-center gap-2 text-[12px] text-v2-text-text-base" title={language.t("deveagent.skillstore.updateFromSourceHint")}>
+              <input type="checkbox" checked={autoCheck()} onChange={(event) => changeAutoCheck(event.currentTarget.checked)} />
+              {language.t("deveagent.skillstore.autoCheckOnOpen")}
+            </label>
             <Button variant="secondary" size="small" disabled={checkingUpdates()} onClick={() => void checkSkillUpdates()}>
               {checkingUpdates() ? language.t("deveagent.skillstore.checking") : language.t("deveagent.skillstore.checkForUpdates")}
             </Button>
@@ -860,7 +890,7 @@ export function DeveagentSkillStore(props: { initialTab?: Extract<SkillStoreTab,
                       {skill.installed ? (chinese() ? "已安装" : "Installed") : (chinese() ? "来源" : "Source")}
                     </span>
                     <Show when={skill.enabled && skill.id === "token-saver"}>
-                      <span class="shrink-0 rounded bg-v2-background-bg-accent/15 px-1.5 py-0.5 text-[9px] font-semibold text-v2-text-text-accent">
+                      <span class="shrink-0 rounded [background-color:var(--v2-text-text-accent)] text-v2-text-text-inverse px-1.5 py-0.5 text-[9px] font-semibold">
                         {chinese() ? "默认开启" : "On by default"}
                       </span>
                     </Show>
@@ -912,7 +942,10 @@ export function DeveagentSkillStore(props: { initialTab?: Extract<SkillStoreTab,
                     </Button>
                   </Show>
                   <Show when={skill.source.startsWith("remote:")}>
-                    <Show when={skillUpdates()[skill.id] && !skillUpdates()[skill.id]!.upToDate}>
+                    <Show when={skillUpdates()[skill.id]?.error}>
+                      <span role="status" class="text-[12px] text-v2-state-fg-danger">{skillUpdates()[skill.id]?.error}</span>
+                    </Show>
+                    <Show when={skillUpdates()[skill.id] && !skillUpdates()[skill.id]!.upToDate && !skillUpdates()[skill.id]!.error}>
                       <Button variant="secondary" size="small" disabled={updatingSkill() !== null} onClick={() => void updateSkill(skill.id)}>
                         {updatingSkill() === skill.id ? language.t("deveagent.skillstore.updating") : language.t("deveagent.skillstore.update")}
                       </Button>

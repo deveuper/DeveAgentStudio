@@ -13,6 +13,25 @@
 //
 // Reference: references/03-hermes-agent — skill_manage tool, background
 // review fork, .usage.json provenance sidecar.
+//
+// Wiring status of this module (see the marker convention below):
+//
+//   The WRITE half is wired: the `skill-save` tool calls `writeAutoSkill`, and
+//   the trigger that prompts the model to call it (`shouldRunAutoSkillReview`)
+//   is called from the `session.idle` hook. Both run in production.
+//
+//   The STORE it writes to is NOT on any load path. `autoSkillDir()` resolves
+//   to `<workspace>/.deveagent/skills`, while the skill loaders read other
+//   directories entirely (`loadLocalSkills` reads
+//   `~/.config/opencode/local-skills`; `SKILL_DIRS` reads `~/.hermes/skills`
+//   and `~/.codex/superpowers/skills`). A skill written here is therefore
+//   staged on disk and never injected into a session. The `skill-save` tool
+//   result says so explicitly (`staged: true`, `active: false`) — do not
+//   describe an auto-saved skill as active.
+//
+//   Two functions below are STAGED (no production caller): `markAutoSkillUsed`
+//   and `runAutoSkillMaintenance`. Until usage is recorded, staleness is
+//   unmeasurable, and until maintenance runs, nothing ever goes stale.
 
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises"
 import path from "node:path"
@@ -23,6 +42,24 @@ export const AUTO_SKILL_DESC_LIMIT = 60
 const NAME_RE = /^[a-z0-9][a-z0-9._-]*$/
 const MAX_NAME_LENGTH = 64
 const LEDGER_FILE = "auto-skills.json"
+
+// ---------------------------------------------------------------------------
+// Wiring markers
+//
+// This repo ships several modules that are fully implemented and unit-tested
+// but have no production caller yet. Public docs and release notes have
+// repeatedly described those as "delivered" or "wired end-to-end", which is
+// false. Every affected definition therefore carries one of these three tags
+// in the comment directly above it:
+//
+//   WIRED  — has a production caller and was verified end-to-end.
+//   STAGED — implemented and unit-tested, but NO production caller. It must
+//            not be described as working, delivered, or active.
+//   DEAD   — no callers and abandoned; delete it or mark it before reusing.
+//
+// Grep for the tag to get the current inventory:
+//   grep -rn "STAGED:" packages/opencode/src/plugin/
+// ---------------------------------------------------------------------------
 
 export type AutoSkillProvenance = {
   /** Who wrote it: the background reviewer or the user. Only "agent" skills
@@ -137,6 +174,13 @@ export function canAutoWrite(ledger: AutoSkillLedger, name: string): { ok: true 
   return { ok: true }
 }
 
+/**
+ * WIRED (write only): called by the `skill-save` tool, which the model reaches
+ * through the `session.idle` self-improvement trigger. The write itself is real
+ * and atomic. What is NOT wired is the read side — nothing loads
+ * `<workspace>/.deveagent/skills`, so a successful write stages a file that no
+ * session will ever inject. `skill-save` reports that as `staged: true`.
+ */
 export async function writeAutoSkill(input: {
   directory: string
   name: string
@@ -174,7 +218,19 @@ export async function writeAutoSkill(input: {
   return { ok: true, path: file, name: valid.name }
 }
 
-/** Mark a skill as used so staleness tracking has real data. */
+/**
+ * STAGED: implemented and unit-tested, but NO production caller.
+ *
+ * Nothing in the product ever loads an auto-saved skill (see the module header:
+ * `autoSkillDir()` is not on any load path), so this is never invoked and every
+ * ledger entry keeps `useCount: 0` / no `lastUsedAt` forever. Consequences that
+ * must not be papered over elsewhere:
+ *   - `deveagent-skill-doctor.ts` cannot report real usage — it says "usage not
+ *     recorded" instead of claiming every skill was never used.
+ *   - Staleness is unmeasurable, so no skill can honestly be called "unused".
+ *
+ * Mark a skill as used so staleness tracking has real data.
+ */
 export async function markAutoSkillUsed(directory: string, name: string): Promise<void> {
   const ledger = await readAutoSkillLedger(directory)
   const entry = ledger[name]
@@ -186,6 +242,14 @@ export async function markAutoSkillUsed(directory: string, name: string): Promis
 }
 
 /**
+ * STAGED: implemented and unit-tested, but NO production caller.
+ *
+ * The only caller is this module's own test. It is not invoked at session idle,
+ * at startup, or on any schedule, so the 30-day stale / 90-day archived rule
+ * never actually runs. README and release notes previously presented this
+ * maintenance as a delivered capability; that claim was removed. Do not
+ * describe skills as going stale or being archived until this has a caller.
+ *
  * Deterministic maintenance (the cheap half of Hermes' curator): mark skills
  * unused for 30 days stale, and 90 days stale-and-unused archived. Never
  * deletes; pinned and recently-patched skills are exempt.
